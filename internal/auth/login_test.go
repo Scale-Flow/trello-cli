@@ -16,6 +16,12 @@ func TestLoginWithToken(t *testing.T) {
 	// Mock Trello API for credential validation
 	trelloServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/1/members/me" {
+			if got := r.URL.Query().Get("key"); got != "test-api-key" {
+				t.Errorf("key query = %q, want %q", got, "test-api-key")
+			}
+			if got := r.URL.Query().Get("token"); got != "captured-token" {
+				t.Errorf("token query = %q, want %q", got, "captured-token")
+			}
 			json.NewEncoder(w).Encode(map[string]string{
 				"id":       "member456",
 				"username": "loginuser",
@@ -69,6 +75,12 @@ func TestLoginWithToken(t *testing.T) {
 
 func TestLoginInvalidToken(t *testing.T) {
 	trelloServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if got := r.URL.Query().Get("key"); got != "bad-key" {
+			t.Errorf("key query = %q, want %q", got, "bad-key")
+		}
+		if got := r.URL.Query().Get("token"); got != "bad-token" {
+			t.Errorf("token query = %q, want %q", got, "bad-token")
+		}
 		w.WriteHeader(http.StatusUnauthorized)
 	}))
 	defer trelloServer.Close()
