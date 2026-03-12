@@ -1,6 +1,11 @@
 package credentials
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+
+	"github.com/zalando/go-keyring"
+)
 
 // ErrNotConfigured is returned when no credentials are stored for the requested profile.
 var ErrNotConfigured = errors.New("credentials not configured")
@@ -45,4 +50,53 @@ func (m *MemoryStore) Set(profile string, creds Credentials) error {
 func (m *MemoryStore) Delete(profile string) error {
 	delete(m.creds, profile)
 	return nil
+}
+
+const keyringServicePrefix = "trello-cli"
+
+// KeyringServiceName returns the keyring service name for a profile.
+func KeyringServiceName(profile string) string {
+	return keyringServicePrefix + "/" + profile
+}
+
+// KeyringStore persists credentials in the OS keyring.
+type KeyringStore struct{}
+
+// NewKeyringStore creates a new keyring-backed credential store.
+func NewKeyringStore() *KeyringStore {
+	return &KeyringStore{}
+}
+
+func (k *KeyringStore) Get(profile string) (Credentials, error) {
+	svc := KeyringServiceName(profile)
+	data, err := keyring.Get(svc, "credentials")
+	if err != nil {
+		if errors.Is(err, keyring.ErrNotFound) {
+			return Credentials{}, ErrNotConfigured
+		}
+		return Credentials{}, err
+	}
+	var creds Credentials
+	if err := json.Unmarshal([]byte(data), &creds); err != nil {
+		return Credentials{}, err
+	}
+	return creds, nil
+}
+
+func (k *KeyringStore) Set(profile string, creds Credentials) error {
+	svc := KeyringServiceName(profile)
+	data, err := json.Marshal(creds)
+	if err != nil {
+		return err
+	}
+	return keyring.Set(svc, "credentials", string(data))
+}
+
+func (k *KeyringStore) Delete(profile string) error {
+	svc := KeyringServiceName(profile)
+	err := keyring.Delete(svc, "credentials")
+	if errors.Is(err, keyring.ErrNotFound) {
+		return nil
+	}
+	return err
 }

@@ -121,3 +121,15 @@ func TestMemoryStoreMultipleProfiles(t *testing.T) {
 		t.Errorf("work APIKey = %q, want %q", got2.APIKey, "k2")
 	}
 }
+
+func TestKeyringStoreServiceName(t *testing.T) {
+	svc := credentials.KeyringServiceName("default")
+	if svc != "trello-cli/default" {
+		t.Errorf("service name = %q, want %q", svc, "trello-cli/default")
+	}
+
+	svc2 := credentials.KeyringServiceName("work")
+	if svc2 != "trello-cli/work" {
+		t.Errorf("service name = %q, want %q", svc2, "trello-cli/work")
+	}
+}
