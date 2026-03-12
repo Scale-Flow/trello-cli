@@ -1,6 +1,10 @@
 package contract
 
-import "encoding/json"
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+)
 
 type successEnvelope struct {
 	OK   bool `json:"ok"`
@@ -33,4 +37,22 @@ func ErrorEnvelope(code, message string) ([]byte, error) {
 // ErrorFromContractError builds a JSON error envelope from a ContractError.
 func ErrorFromContractError(ce *ContractError) ([]byte, error) {
 	return ErrorEnvelope(ce.Code, ce.Message)
+}
+
+// Render writes a JSON envelope to the writer. If pretty is true, output is indented.
+func Render(w io.Writer, envelope []byte, pretty bool) error {
+	if pretty {
+		var buf bytes.Buffer
+		if err := json.Indent(&buf, envelope, "", "  "); err != nil {
+			return err
+		}
+		buf.WriteByte('\n')
+		_, err := w.Write(buf.Bytes())
+		return err
+	}
+	if _, err := w.Write(envelope); err != nil {
+		return err
+	}
+	_, err := w.Write([]byte{'\n'})
+	return err
 }
