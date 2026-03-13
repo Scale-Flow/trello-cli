@@ -7,3 +7,6 @@ __pycache__/
 docs/plans/
 docs/superpowers/plans/
 docs/superpowers/specs/
+bin/
+using-trello-cli-workspace/
+dist/
