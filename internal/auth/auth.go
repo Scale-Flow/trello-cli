@@ -16,5 +16,8 @@ func RequireAuth(store credentials.Store, profile string) (credentials.Credentia
 		}
 		return credentials.Credentials{}, err
 	}
+	if creds.APIKey == "" || creds.Token == "" || creds.AuthMode == "key_only" {
+		return credentials.Credentials{}, contract.NewError(contract.AuthRequired, "not authenticated — run 'trello auth login' or 'trello auth set'")
+	}
 	return creds, nil
 }

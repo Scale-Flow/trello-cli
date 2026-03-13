@@ -1,6 +1,7 @@
 package auth_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/brettmcdowell/trello-cli/internal/auth"
+	"github.com/brettmcdowell/trello-cli/internal/contract"
 	"github.com/brettmcdowell/trello-cli/internal/credentials"
 )
 
@@ -142,5 +144,111 @@ func TestBuildAuthorizeURL(t *testing.T) {
 	}
 	if got := query.Get("expiration"); got != "never" {
 		t.Errorf("expiration = %q, want %q", got, "never")
+	}
+}
+
+func TestLoginCompletesInteractiveFlowUsingEnvAPIKey(t *testing.T) {
+	t.Setenv("TRELLO_API_KEY", "env-api-key")
+
+	trelloServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/1/members/me" {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		if got := r.URL.Query().Get("key"); got != "env-api-key" {
+			t.Errorf("key query = %q, want %q", got, "env-api-key")
+		}
+		if got := r.URL.Query().Get("token"); got != "captured-token" {
+			t.Errorf("token query = %q, want %q", got, "captured-token")
+		}
+		json.NewEncoder(w).Encode(map[string]string{
+			"id":       "member789",
+			"username": "interactive",
+			"fullName": "Interactive User",
+		})
+	}))
+	defer trelloServer.Close()
+
+	store := credentials.NewMemoryStore()
+	var stderr bytes.Buffer
+
+	result, err := auth.Login(
+		context.Background(),
+		store,
+		"default",
+		trelloServer.URL,
+		"",
+		func(authorizeURL string) error {
+			parsed, err := url.Parse(authorizeURL)
+			if err != nil {
+				return err
+			}
+			callbackURL := parsed.Query().Get("return_url")
+			if callbackURL == "" {
+				t.Fatal("authorize URL missing return_url")
+			}
+
+			if _, err := http.Get(callbackURL); err != nil {
+				return err
+			}
+
+			body := bytes.NewBufferString(`{"token":"captured-token"}`)
+			resp, err := http.Post(callbackURL+"/token", "application/json", body)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			return nil
+		},
+		&stderr,
+	)
+	if err != nil {
+		t.Fatalf("Login() returned error: %v", err)
+	}
+
+	if result.Configured != true {
+		t.Errorf("Configured = %v, want true", result.Configured)
+	}
+	if result.AuthMode == nil || *result.AuthMode != "interactive" {
+		t.Fatalf("AuthMode = %v, want interactive", result.AuthMode)
+	}
+	if result.Member == nil || result.Member.Username != "interactive" {
+		t.Fatalf("Member = %#v, want interactive member", result.Member)
+	}
+
+	creds, err := store.Get("default")
+	if err != nil {
+		t.Fatalf("stored credentials missing: %v", err)
+	}
+	if creds.APIKey != "env-api-key" {
+		t.Errorf("stored APIKey = %q, want %q", creds.APIKey, "env-api-key")
+	}
+	if creds.Token != "captured-token" {
+		t.Errorf("stored Token = %q, want %q", creds.Token, "captured-token")
+	}
+}
+
+func TestLoginRequiresAPIKey(t *testing.T) {
+	store := credentials.NewMemoryStore()
+
+	_, err := auth.Login(
+		context.Background(),
+		store,
+		"default",
+		"https://api.trello.com",
+		"",
+		func(string) error { return nil },
+		&bytes.Buffer{},
+	)
+	if err == nil {
+		t.Fatal("Login() should fail without an API key")
+	}
+
+	contractErr, ok := err.(*contract.ContractError)
+	if !ok {
+		t.Fatalf("error type = %T, want *contract.ContractError", err)
+	}
+	if contractErr.Code != contract.ValidationError {
+		t.Fatalf("error code = %q, want %q", contractErr.Code, contract.ValidationError)
 	}
 }

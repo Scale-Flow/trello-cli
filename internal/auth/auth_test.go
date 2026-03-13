@@ -45,3 +45,25 @@ func TestRequireAuthWithoutCredentials(t *testing.T) {
 		t.Errorf("Code = %q, want %q", ce.Code, contract.AuthRequired)
 	}
 }
+
+func TestRequireAuthWithKeyOnlyCredentials(t *testing.T) {
+	store := credentials.NewMemoryStore()
+	store.Set("default", credentials.Credentials{
+		APIKey:   "key1",
+		Token:    "",
+		AuthMode: "key_only",
+	})
+
+	_, err := auth.RequireAuth(store, "default")
+	if err == nil {
+		t.Fatal("RequireAuth() should return error for key-only credentials")
+	}
+
+	var ce *contract.ContractError
+	if !errors.As(err, &ce) {
+		t.Fatalf("error should be *ContractError, got %T", err)
+	}
+	if ce.Code != contract.AuthRequired {
+		t.Errorf("Code = %q, want %q", ce.Code, contract.AuthRequired)
+	}
+}

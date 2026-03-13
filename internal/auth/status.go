@@ -40,6 +40,17 @@ func Status(ctx context.Context, store credentials.Store, profile, baseURL strin
 		}
 		return StatusResult{}, err
 	}
+	if creds.APIKey == "" || creds.Token == "" || creds.AuthMode == "key_only" {
+		authMode := creds.AuthMode
+		if authMode == "" {
+			authMode = "key_only"
+		}
+		return StatusResult{
+			Configured: false,
+			AuthMode:   &authMode,
+			Member:     nil,
+		}, nil
+	}
 
 	member, err := getMember(ctx, baseURL, creds.APIKey, creds.Token)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/brettmcdowell/trello-cli/internal/auth"
 	"github.com/brettmcdowell/trello-cli/internal/credentials"
 )
 
@@ -13,6 +14,7 @@ func setupTestAuth(t *testing.T) {
 	// Use a memory store for tests
 	credStore = credentials.NewMemoryStore()
 	apiClient = nil
+	runAuthLogin = auth.Login
 	// Reset root command output state to avoid cross-test contamination
 	rootCmd.SetOut(nil)
 	rootCmd.SetArgs(nil)
@@ -21,6 +23,9 @@ func setupTestAuth(t *testing.T) {
 	}
 	if err := authSetCmd.Flags().Set("token", ""); err != nil {
 		t.Fatalf("failed to reset token flag: %v", err)
+	}
+	if err := authSetKeyCmd.Flags().Set("api-key", ""); err != nil {
+		t.Fatalf("failed to reset set-key api-key flag: %v", err)
 	}
 	resetFlag := func(cmdName, flagName, value string) {
 		t.Helper()
@@ -189,6 +194,46 @@ func TestAuthSetMissingFlags(t *testing.T) {
 	}
 }
 
+func TestAuthSetKeyCommand(t *testing.T) {
+	setupTestAuth(t)
+
+	var buf bytes.Buffer
+	rootCmd.SetOut(&buf)
+	rootCmd.SetArgs([]string{"auth", "set-key", "--api-key", "test-key"})
+
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatalf("auth set-key failed: %v", err)
+	}
+
+	var envelope map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &envelope); err != nil {
+		t.Fatalf("invalid JSON: %v\nraw: %s", err, buf.String())
+	}
+
+	if envelope["ok"] != true {
+		t.Errorf("ok = %v, want true", envelope["ok"])
+	}
+
+	data := envelope["data"].(map[string]any)
+	if data["configured"] != false {
+		t.Errorf("configured = %v, want false", data["configured"])
+	}
+	if data["authMode"] != "key_only" {
+		t.Errorf("authMode = %v, want key_only", data["authMode"])
+	}
+}
+
+func TestAuthSetKeyMissingFlag(t *testing.T) {
+	setupTestAuth(t)
+
+	rootCmd.SetArgs([]string{"auth", "set-key"})
+
+	err := rootCmd.Execute()
+	if err == nil {
+		t.Fatal("auth set-key should fail without --api-key")
+	}
+}
+
 func TestAuthClearCommand(t *testing.T) {
 	setupTestAuth(t)
 	// Pre-set credentials
@@ -218,18 +263,46 @@ func TestAuthClearCommand(t *testing.T) {
 	}
 }
 
-func TestAuthLoginReturnsUnsupported(t *testing.T) {
+func TestAuthLoginCommand(t *testing.T) {
 	setupTestAuth(t)
+
+	runAuthLogin = func(_ loginCommandContext, _ credentials.Store, _ string, _ string, _ string, _ loginBrowserOpener, _ loginOutputWriter) (auth.LoginResult, error) {
+		authMode := "interactive"
+		return auth.LoginResult{
+			Configured: true,
+			AuthMode:   &authMode,
+			Member: &auth.Member{
+				ID:       "member123",
+				Username: "brett",
+				FullName: "Brett McDowell",
+			},
+		}, nil
+	}
 
 	var buf bytes.Buffer
 	rootCmd.SetOut(&buf)
 	rootCmd.SetArgs([]string{"auth", "login"})
 
-	err := rootCmd.Execute()
-	if err == nil {
-		t.Fatal("auth login should return error (not yet implemented)")
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatalf("auth login failed: %v", err)
 	}
-	// The error handler should produce an UNSUPPORTED error envelope
+
+	var envelope map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &envelope); err != nil {
+		t.Fatalf("invalid JSON: %v\nraw: %s", err, buf.String())
+	}
+
+	if envelope["ok"] != true {
+		t.Errorf("ok = %v, want true", envelope["ok"])
+	}
+
+	data := envelope["data"].(map[string]any)
+	if data["configured"] != true {
+		t.Errorf("configured = %v, want true", data["configured"])
+	}
+	if data["authMode"] != "interactive" {
+		t.Errorf("authMode = %v, want interactive", data["authMode"])
+	}
 }
 
 func TestAuthStatusNotConfigured(t *testing.T) {

@@ -126,3 +126,27 @@ func TestStatusInvalidCredentials(t *testing.T) {
 		t.Errorf("Code = %q, want %q", ce.Code, contract.AuthInvalid)
 	}
 }
+
+func TestStatusKeyOnlyNotConfigured(t *testing.T) {
+	store := credentials.NewMemoryStore()
+	store.Set("default", credentials.Credentials{
+		APIKey:   "key-only",
+		Token:    "",
+		AuthMode: "key_only",
+	})
+
+	result, err := auth.Status(context.Background(), store, "default", "http://example.com")
+	if err != nil {
+		t.Fatalf("Status() returned error: %v", err)
+	}
+
+	if result.Configured != false {
+		t.Errorf("Configured = %v, want false", result.Configured)
+	}
+	if result.Member != nil {
+		t.Errorf("Member = %#v, want nil", result.Member)
+	}
+	if result.AuthMode == nil || *result.AuthMode != "key_only" {
+		t.Fatalf("AuthMode = %v, want key_only", result.AuthMode)
+	}
+}

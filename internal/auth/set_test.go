@@ -57,3 +57,70 @@ func TestSetResultHasNoMemberFieldInJSON(t *testing.T) {
 		t.Error("auth set response should not include 'member' field in JSON")
 	}
 }
+
+func TestSetKeyStoresKeyOnlyCredentials(t *testing.T) {
+	store := credentials.NewMemoryStore()
+
+	result, err := auth.SetKey(store, "default", "test-key")
+	if err != nil {
+		t.Fatalf("SetKey() returned error: %v", err)
+	}
+
+	if result.Configured != false {
+		t.Errorf("Configured = %v, want false", result.Configured)
+	}
+	if result.AuthMode != "key_only" {
+		t.Errorf("AuthMode = %q, want %q", result.AuthMode, "key_only")
+	}
+
+	creds, err := store.Get("default")
+	if err != nil {
+		t.Fatalf("store.Get() returned error: %v", err)
+	}
+	if creds.APIKey != "test-key" {
+		t.Errorf("stored APIKey = %q, want %q", creds.APIKey, "test-key")
+	}
+	if creds.Token != "" {
+		t.Errorf("stored Token = %q, want empty string", creds.Token)
+	}
+	if creds.AuthMode != "key_only" {
+		t.Errorf("stored AuthMode = %q, want %q", creds.AuthMode, "key_only")
+	}
+}
+
+func TestSetKeyPreservesExistingToken(t *testing.T) {
+	store := credentials.NewMemoryStore()
+	if err := store.Set("default", credentials.Credentials{
+		APIKey:   "old-key",
+		Token:    "existing-token",
+		AuthMode: "manual",
+	}); err != nil {
+		t.Fatalf("store.Set() returned error: %v", err)
+	}
+
+	result, err := auth.SetKey(store, "default", "new-key")
+	if err != nil {
+		t.Fatalf("SetKey() returned error: %v", err)
+	}
+
+	if result.Configured != true {
+		t.Errorf("Configured = %v, want true", result.Configured)
+	}
+	if result.AuthMode != "manual" {
+		t.Errorf("AuthMode = %q, want %q", result.AuthMode, "manual")
+	}
+
+	creds, err := store.Get("default")
+	if err != nil {
+		t.Fatalf("store.Get() returned error: %v", err)
+	}
+	if creds.APIKey != "new-key" {
+		t.Errorf("stored APIKey = %q, want %q", creds.APIKey, "new-key")
+	}
+	if creds.Token != "existing-token" {
+		t.Errorf("stored Token = %q, want %q", creds.Token, "existing-token")
+	}
+	if creds.AuthMode != "manual" {
+		t.Errorf("stored AuthMode = %q, want %q", creds.AuthMode, "manual")
+	}
+}
