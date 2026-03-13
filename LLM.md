@@ -104,6 +104,7 @@ Top-level commands:
 - `comments`
 - `checklists`
 - `attachments`
+- `custom-fields`
 - `labels`
 - `members`
 - `search`
@@ -156,6 +157,21 @@ Top-level commands:
 - `attachments add-url --card <card-id> --url <http-or-https-url> [--name <display-name>]`
 - `attachments delete --card <card-id> --attachment <attachment-id>`
 
+### Custom Fields
+
+- `custom-fields list --board <board-id>`
+- `custom-fields get --field <field-id>`
+- `custom-fields create --board <board-id> --name <name> --type <text|number|date|checkbox|list> [--card-front] [--option <value>...]`
+- `custom-fields update --field <field-id> [--name <name>] [--card-front]`
+- `custom-fields delete --field <field-id>`
+- `custom-fields options list --field <field-id>`
+- `custom-fields options add --field <field-id> --text <text> [--color <color>]`
+- `custom-fields options update --field <field-id> --option <option-id> [--text <text>] [--color <color>]`
+- `custom-fields options delete --field <field-id> --option <option-id>`
+- `custom-fields items list --card <card-id>`
+- `custom-fields items set --card <card-id> --field <field-id> <exactly one of: --text, --number, --date, --checked, --option>`
+- `custom-fields items clear --card <card-id> --field <field-id>`
+
 ### Labels
 
 - `labels list --board <board-id>`
@@ -187,6 +203,10 @@ Top-level commands:
 - `attachments add-url` only accepts valid `http` or `https` URLs
 - `attachments add-file` requires an existing local file path
 - Checklist item state must be `complete` or `incomplete`
+- `custom-fields create` requires `--board`, `--name`, and `--type`; `--type` must be one of `text`, `number`, `date`, `checkbox`, `list`; `--option` is only allowed with `--type list`
+- `custom-fields update` requires `--field` and at least one mutation flag
+- `custom-fields items set` requires exactly one value flag (`--text`, `--number`, `--date`, `--checked`, or `--option`)
+- `--date` values must be ISO-8601 compatible
 
 ## Recommended Usage Patterns
 
@@ -239,6 +259,13 @@ Board bootstrap example:
 1. `trello checklists create --card <card-id> --name "Release"`
 2. `trello checklists items add --checklist <checklist-id> --name "Ship docs"`
 3. `trello checklists items update --card <card-id> --item <item-id> --state complete`
+
+### Manage Custom Fields
+
+1. `trello custom-fields list --board <board-id>`
+2. `trello custom-fields items list --card <card-id>`
+3. `trello custom-fields items set --card <card-id> --field <field-id> --text "value"`
+4. `trello custom-fields items list --card <card-id>`
 
 ### Search Before Acting
 

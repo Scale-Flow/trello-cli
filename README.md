@@ -8,7 +8,7 @@ Every command writes a JSON envelope to `stdout`, which makes the CLI useful bot
 
 - Stable JSON success and error envelopes
 - Interactive browser login and manual credential setup
-- Broad Trello command coverage for boards, lists, cards, comments, labels, members, checklists, attachments, and search
+- Broad Trello command coverage for boards, lists, cards, comments, labels, members, checklists, attachments, custom fields, and search
 - Single-binary Go CLI with minimal runtime requirements
 
 ## Build
@@ -65,6 +65,8 @@ go run ./cmd/trello lists list --board <board-id>
 go run ./cmd/trello cards list --list <list-id>
 go run ./cmd/trello cards create --list <list-id> --name "Follow up with customer"
 go run ./cmd/trello search cards --query "customer"
+go run ./cmd/trello custom-fields list --board <board-id>
+go run ./cmd/trello custom-fields items set --card <card-id> --field <field-id> --text "value"
 ```
 
 ## Documentation

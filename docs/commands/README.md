@@ -9,6 +9,7 @@
 - [comments](comments.md)
 - [checklists](checklists.md)
 - [attachments](attachments.md)
+- [custom-fields](custom-fields.md)
 - [labels](labels.md)
 - [members](members.md)
 - [search](search.md)

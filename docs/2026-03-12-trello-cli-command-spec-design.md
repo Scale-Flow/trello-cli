@@ -831,7 +831,6 @@ The following areas are intentionally out of scope for V1:
 - board stars
 - workspace and organization administration
 - member profile management
-- custom fields
 - power-up administration
 - board preference administration unrelated to task workflows
 
