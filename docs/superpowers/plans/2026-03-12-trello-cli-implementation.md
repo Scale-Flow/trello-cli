@@ -298,7 +298,7 @@ git commit -m "feat: add contract error type and standard error code constants"
 - Create: `internal/contract/response.go`
 - Create: `internal/contract/response_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/contract/response_test.go`:
 ```go
@@ -4543,12 +4543,12 @@ func TestGetBoard(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail** (stubs return nil/empty)
+- [x] **Step 2: Run tests to verify they fail** (stubs return nil/empty)
 
 Run: `go test ./internal/trello/ -run "TestListBoards|TestGetBoard" -v`
 Expected: FAIL (stubs return empty results)
 
-- [ ] **Step 3: Implement client methods**
+- [x] **Step 3: Implement client methods**
 
 Create `internal/trello/boards.go`:
 ```go
@@ -4574,12 +4574,12 @@ func (c *Client) GetBoard(ctx context.Context, boardID string) (Board, error) {
 
 Remove the `ListBoards` and `GetBoard` stubs from `client.go`.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `go test ./internal/trello/ -run "TestListBoards|TestGetBoard" -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/trello/boards.go internal/trello/boards_test.go internal/trello/client.go
