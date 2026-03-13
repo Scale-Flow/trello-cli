@@ -1,5 +1,7 @@
 # Authentication
 
+> **First time?** You need a Trello API key before authenticating. See [Prerequisites](../getting-started.md#prerequisites-get-your-trello-api-key) for how to create a Power-Up and generate your key.
+
 ## Supported Auth Flows
 
 The CLI supports three practical auth states:
