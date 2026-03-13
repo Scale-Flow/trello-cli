@@ -10,8 +10,8 @@ This skill teaches you how to translate natural-language Trello requests into sa
 Try these in order — use whichever works first:
 
 1. `trello` on `PATH`
-2. `/Users/brettmcdowell/Dev/Trello_CLI/bin/trello`
-3. Build from the repo: `cd /Users/brettmcdowell/Dev/Trello_CLI && go build -o bin/trello ./cmd/trello`
+2. `./bin/trello` (relative to the repo root)
+3. Build from the repo: `go build -o bin/trello ./cmd/trello`
 
 Once resolved, use that path for all subsequent commands in the session.
 

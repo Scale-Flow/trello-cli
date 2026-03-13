@@ -79,6 +79,6 @@ Search cards:
 
 ## Next Reading
 
-- [Authentication](/Users/brettmcdowell/Dev/Trello_CLI/docs/concepts/authentication.md)
-- [JSON Output](/Users/brettmcdowell/Dev/Trello_CLI/docs/concepts/json-output.md)
-- [Command Reference](/Users/brettmcdowell/Dev/Trello_CLI/docs/commands/cards.md)
+- [Authentication](concepts/authentication.md)
+- [JSON Output](concepts/json-output.md)
+- [Command Reference](commands/cards.md)
