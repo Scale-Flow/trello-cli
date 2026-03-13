@@ -5,8 +5,9 @@ node_modules/
 *.pyc
 __pycache__/
 docs/plans/
-docs/superpowers/plans/
-docs/superpowers/specs/
+docs/superpowers/
+docs/Stack.md
+docs/2026-03-12-trello-cli-command-spec-design.md
 bin/
 using-trello-cli-workspace/
 dist/
