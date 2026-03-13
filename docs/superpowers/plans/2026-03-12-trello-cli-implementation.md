@@ -5242,8 +5242,8 @@ func (c *Client) DeleteCheckItem(ctx context.Context, checklistID, itemID string
 }
 ```
 
-- [ ] **Step 1-4: Write tests, implement, verify**
-- [ ] **Step 5: Commit**
+- [x] **Step 1-4: Write tests, implement, verify**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/trello/checklists.go internal/trello/checklists_test.go internal/trello/client.go
