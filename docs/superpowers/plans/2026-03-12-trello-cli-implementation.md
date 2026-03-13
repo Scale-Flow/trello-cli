@@ -4817,7 +4817,7 @@ git commit -m "feat: add boards list and boards get commands"
 - Create: `internal/trello/lists.go`
 - Create: `internal/trello/lists_test.go`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Create `internal/trello/lists_test.go` with tests for all 5 list methods:
 - `TestListLists` — GET /1/boards/{id}/lists, verify path and decoded response
@@ -4826,9 +4826,9 @@ Create `internal/trello/lists_test.go` with tests for all 5 list methods:
 - `TestArchiveList` — PUT /1/lists/{id}, verify `closed=true` in query
 - `TestMoveList` — PUT /1/lists/{id}, verify `idBoard` and optional `pos` in query
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
-- [ ] **Step 3: Implement methods**
+- [x] **Step 3: Implement methods**
 
 Create `internal/trello/lists.go`:
 ```go
@@ -4889,8 +4889,8 @@ func (c *Client) MoveList(ctx context.Context, listID, boardID string, pos *floa
 
 Remove list stubs from `client.go`.
 
-- [ ] **Step 4: Run tests, verify PASS**
-- [ ] **Step 5: Commit**
+- [x] **Step 4: Run tests, verify PASS**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/trello/lists.go internal/trello/lists_test.go internal/trello/client.go
