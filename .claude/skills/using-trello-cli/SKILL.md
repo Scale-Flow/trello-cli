@@ -25,9 +25,22 @@ trello auth status
 
 The response follows the JSON envelope. If `ok` is `false` or the auth mode is `key_only`, stop and explain the issue to the user. Do not attempt resource commands without valid auth.
 
-Auth can come from two sources:
+Auth can come from three sources:
+- **Device flow** (preferred — via `trello auth login` with Power-Up pairing)
 - **OS keyring** (stored credentials via `trello auth set` or `trello auth login`)
 - **Environment variables** `TRELLO_API_KEY` and `TRELLO_TOKEN`
+
+### Device Flow Authentication (Preferred)
+
+When authenticating a new user, prefer the device flow over manual API key setup:
+
+1. Run `trello auth login` — this contacts the pairing service and displays a code
+2. Present the pairing code to the user: "Enter this code in your Trello board's CLI Connector Power-Up: XXXX-XXXX"
+3. The command blocks until the user completes pairing (up to 15 minutes)
+4. On success, credentials are stored automatically — no API key or token handling needed
+5. If the pairing service is unavailable, the CLI falls back to browser-based login automatically
+
+The device flow is ideal for non-technical users and agent-driven workflows because it requires no developer portal access.
 
 ## Core Workflow: Discover, Mutate, Verify
 

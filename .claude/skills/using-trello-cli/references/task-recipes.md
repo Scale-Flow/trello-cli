@@ -11,8 +11,21 @@ trello auth status
 ```
 
 If `ok` is `false`, help the user authenticate:
+
+### Auth Check (Device Flow — Preferred)
+
+1. `trello auth status` — check if already authenticated
+2. If not authenticated:
+   - Run `trello auth login`
+   - The CLI will print a pairing code (e.g., `WDJB-MJHT`)
+   - Tell the user: "Enter this code in your Trello board's CLI Connector Power-Up"
+   - Wait for the command to complete
+3. Verify: `trello auth status` should show `configured: true, authMode: "device"`
+
+### Auth Check (Manual Fallback)
+
 - `trello auth set --api-key <key> --token <token>` — manual credentials
-- `trello auth login --api-key <key>` — browser OAuth flow
+- `trello auth login` — falls back to browser OAuth if pairing service is unavailable
 
 ## Board Discovery
 
