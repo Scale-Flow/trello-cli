@@ -10,6 +10,18 @@
 
 **Spec:** `docs/superpowers/specs/2026-03-12-trello-cli-implementation-design.md`
 
+## Execution Status
+
+- Stop point: implementation paused after Task 26 completion.
+- Completed: Tasks 1-26 are implemented and checked off below.
+- Current worktree/branch during execution: `/Users/brettmcdowell/.config/superpowers/worktrees/Trello_CLI/trello-cli-implementation` on `codex/trello-cli-implementation-clean3`.
+- Known execution note: several tasks were implemented with a real red/green TDD loop during execution, but the failing-red phase was not preserved as a separate commit, so strict spec review flags the history even when the resulting code is correct.
+- Known design tension: `FallbackStore` intentionally reads `KeyringStore -> EnvStore`, while `Delete` only affects the primary store. That means `auth clear` can still be followed by env-backed auth via `auth status`. This matches the current written plan, so it was documented rather than changed midstream.
+- Known auth note: the auth chunk is still consistently wired to the `"default"` profile even though profile support exists in `internal/config`; that broader integration was left for later plan slices rather than expanded inside Tasks 19-24.
+- Task 21 follow-up fixes landed after the initial implementation to wrap request-construction/parsing failures as `HTTP_ERROR`, URL-encode auth query params, and strengthen status tests.
+- Task 23 follow-up fixes landed after the initial implementation to harden the authorize URL contract and verify `CompleteLogin` forwards the captured key/token during validation.
+- Workspace hygiene note: a worker reported stray uncommitted `internal/trello` files may also exist in `/Users/brettmcdowell/Dev/Trello_CLI`; the tracked implementation for this plan lives in the isolated worktree path above.
+
 ---
 
 ## File Structure
@@ -99,7 +111,7 @@ go.sum
 - Create: `go.mod`
 - Create: `cmd/trello/main.go`
 
-- [ ] **Step 1: Initialize Go module**
+- [x] **Step 1: Initialize Go module**
 
 Run:
 ```bash
@@ -107,7 +119,7 @@ cd /Users/brettmcdowell/Dev/Trello_CLI
 go mod init github.com/brettmcdowell/trello-cli
 ```
 
-- [ ] **Step 2: Create directory structure**
+- [x] **Step 2: Create directory structure**
 
 Run:
 ```bash
@@ -120,7 +132,7 @@ mkdir -p internal/trello
 mkdir -p internal/testutil
 ```
 
-- [ ] **Step 3: Create minimal main.go**
+- [x] **Step 3: Create minimal main.go**
 
 Create `cmd/trello/main.go`:
 ```go
@@ -133,12 +145,12 @@ func main() {
 }
 ```
 
-- [ ] **Step 4: Verify it compiles and runs**
+- [x] **Step 4: Verify it compiles and runs**
 
 Run: `go run ./cmd/trello/`
 Expected: `trello cli`
 
-- [ ] **Step 5: Install dependencies**
+- [x] **Step 5: Install dependencies**
 
 Run:
 ```bash
@@ -147,7 +159,7 @@ go get github.com/spf13/viper
 go get github.com/zalando/go-keyring
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add go.mod go.sum cmd/trello/main.go
@@ -162,7 +174,7 @@ git commit -m "feat: initialize Go module with directory structure and dependenc
 - Create: `internal/contract/errors.go`
 - Create: `internal/contract/errors_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/contract/errors_test.go`:
 ```go
@@ -238,12 +250,12 @@ func TestNewContractError(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/contract/ -v`
 Expected: compilation failure — `contract` package doesn't exist yet
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `internal/contract/errors.go`:
 ```go
@@ -278,12 +290,12 @@ func NewError(code, message string) error {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/contract/ -v`
 Expected: all 3 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/contract/errors.go internal/contract/errors_test.go
@@ -298,7 +310,7 @@ git commit -m "feat: add contract error type and standard error code constants"
 - Create: `internal/contract/response.go`
 - Create: `internal/contract/response_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/contract/response_test.go`:
 ```go
@@ -387,12 +399,12 @@ func TestSuccessEnvelopeHasNoErrorField(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/contract/ -run TestSuccess -v`
 Expected: compilation failure — `Success` function doesn't exist
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `internal/contract/response.go`:
 ```go
@@ -411,12 +423,12 @@ func Success(data any) ([]byte, error) {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/contract/ -run TestSuccess -v`
 Expected: all 3 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/contract/response.go internal/contract/response_test.go
@@ -431,7 +443,7 @@ git commit -m "feat: add Success envelope builder"
 - Modify: `internal/contract/response.go`
 - Modify: `internal/contract/response_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `internal/contract/response_test.go`:
 ```go
@@ -503,12 +515,12 @@ func TestErrorEnvelopeFromContractError(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/contract/ -run TestError -v`
 Expected: compilation failure — `ErrorEnvelope` and `ErrorFromContractError` don't exist
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Add to `internal/contract/response.go`:
 ```go
@@ -536,12 +548,12 @@ func ErrorFromContractError(ce *ContractError) ([]byte, error) {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/contract/ -run TestError -v`
 Expected: all 3 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/contract/response.go internal/contract/response_test.go
@@ -556,7 +568,7 @@ git commit -m "feat: add ErrorEnvelope and ErrorFromContractError builders"
 - Modify: `internal/contract/response.go`
 - Modify: `internal/contract/response_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `internal/contract/response_test.go`:
 ```go
@@ -617,12 +629,12 @@ func TestRenderPretty(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/contract/ -run TestRender -v`
 Expected: compilation failure — `Render` function doesn't exist
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Add to `internal/contract/response.go`:
 ```go
@@ -652,12 +664,12 @@ func Render(w io.Writer, envelope []byte, pretty bool) error {
 
 Update the import block at top of `response.go` to include `"bytes"` and `"io"`.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/contract/ -run TestRender -v`
 Expected: all 2 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/contract/response.go internal/contract/response_test.go
@@ -672,7 +684,7 @@ git commit -m "feat: add Render function with pretty-print support"
 - Create: `internal/contract/validation.go`
 - Create: `internal/contract/validation_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/contract/validation_test.go`:
 ```go
@@ -707,12 +719,12 @@ func TestRequireFlagMissing(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/contract/ -run TestRequireFlag -v`
 Expected: compilation failure — `RequireFlag` doesn't exist
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `internal/contract/validation.go`:
 ```go
@@ -729,12 +741,12 @@ func RequireFlag(name, value string) error {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/contract/ -run TestRequireFlag -v`
 Expected: all 2 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/contract/validation.go internal/contract/validation_test.go
@@ -749,7 +761,7 @@ git commit -m "feat: add RequireFlag validator"
 - Modify: `internal/contract/validation.go`
 - Modify: `internal/contract/validation_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `internal/contract/validation_test.go`:
 ```go
@@ -826,12 +838,12 @@ func TestRequireAtLeastOneWithAll(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/contract/ -run "TestRequireExactly|TestRequireAtLeast" -v`
 Expected: compilation failure
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Add to `internal/contract/validation.go`:
 ```go
@@ -872,12 +884,12 @@ func RequireAtLeastOne(flags map[string]string) error {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/contract/ -run "TestRequireExactly|TestRequireAtLeast" -v`
 Expected: all 6 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/contract/validation.go internal/contract/validation_test.go
@@ -892,7 +904,7 @@ git commit -m "feat: add RequireExactlyOne and RequireAtLeastOne validators"
 - Modify: `internal/contract/validation.go`
 - Modify: `internal/contract/validation_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `internal/contract/validation_test.go`:
 ```go
@@ -993,12 +1005,12 @@ func TestValidateFilePathEmpty(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/contract/ -run "TestValidateISO|TestValidateURL|TestValidateFile" -v`
 Expected: compilation failure
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Add to `internal/contract/validation.go`:
 ```go
@@ -1059,17 +1071,17 @@ func ValidateFilePath(path string) error {
 
 Update the import block to include `"net/url"`, `"os"`, and `"time"`.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/contract/ -run "TestValidateISO|TestValidateURL|TestValidateFile" -v`
 Expected: all 8 tests PASS
 
-- [ ] **Step 5: Run full contract test suite**
+- [x] **Step 5: Run full contract test suite**
 
 Run: `go test ./internal/contract/ -v`
 Expected: all tests PASS
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add internal/contract/validation.go internal/contract/validation_test.go
@@ -1083,7 +1095,7 @@ git commit -m "feat: add ISO-8601, URL, and file path validators"
 **Files:**
 - Create: `internal/testutil/helpers.go`
 
-- [ ] **Step 1: Write test helpers**
+- [x] **Step 1: Write test helpers**
 
 Create `internal/testutil/helpers.go`:
 ```go
@@ -1172,12 +1184,12 @@ func NewTrelloServer(t *testing.T, routes map[string]http.HandlerFunc) *httptest
 
 Note: This file references `credentials.Credentials` and `credentials.ErrNotConfigured` which will be created in Chunk 2. For now, this file will not compile until the credentials package exists. The test helpers will be committed but won't be imported until their dependencies are available.
 
-- [ ] **Step 2: Verify the file has no syntax errors** (skip compilation since dependencies don't exist yet)
+- [x] **Step 2: Verify the file has no syntax errors** (skip compilation since dependencies don't exist yet)
 
 Run: `gofmt -e internal/testutil/helpers.go`
 Expected: formatted output with no errors
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add internal/testutil/helpers.go
@@ -1192,7 +1204,7 @@ git commit -m "feat: add test helpers (ParseEnvelope, AssertSuccess, AssertError
 - Create: `cmd/trello/root.go`
 - Modify: `cmd/trello/main.go`
 
-- [ ] **Step 1: Write root command**
+- [x] **Step 1: Write root command**
 
 Create `cmd/trello/root.go`:
 ```go
@@ -1260,7 +1272,7 @@ func handleError(w io.Writer, err error) int {
 }
 ```
 
-- [ ] **Step 2: Update main.go to use root command**
+- [x] **Step 2: Update main.go to use root command**
 
 Replace `cmd/trello/main.go` with:
 ```go
@@ -1282,12 +1294,12 @@ func main() {
 }
 ```
 
-- [ ] **Step 3: Verify it compiles and runs**
+- [x] **Step 3: Verify it compiles and runs**
 
 Run: `go run ./cmd/trello/ --help`
 Expected: help text showing "Trello CLI" with `--pretty` and `--verbose` flags listed
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add cmd/trello/main.go cmd/trello/root.go
@@ -1302,7 +1314,7 @@ git commit -m "feat: add root command with --pretty and --verbose global flags"
 - Create: `cmd/trello/version.go`
 - Create: `cmd/trello/version_test.go`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `cmd/trello/version_test.go`:
 ```go
@@ -1353,12 +1365,12 @@ func TestVersionCommand(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `go test ./cmd/trello/ -run TestVersionCommand -v`
 Expected: FAIL — no "version" command registered
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `cmd/trello/version.go`:
 ```go
@@ -1391,22 +1403,22 @@ func init() {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `go test ./cmd/trello/ -run TestVersionCommand -v`
 Expected: PASS
 
-- [ ] **Step 5: Run full test suite**
+- [x] **Step 5: Run full test suite**
 
 Run: `go test ./... -v`
 Expected: all tests PASS
 
-- [ ] **Step 6: Verify end-to-end from CLI**
+- [x] **Step 6: Verify end-to-end from CLI**
 
 Run: `go run ./cmd/trello/ version`
 Expected: `{"ok":true,"data":{"version":"dev","commit":"unknown","date":"unknown"}}`
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add cmd/trello/version.go cmd/trello/version_test.go
@@ -1427,7 +1439,7 @@ git commit -m "feat: add version command with build metadata"
 - Create: `internal/config/config.go`
 - Create: `internal/config/config_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/config/config_test.go`:
 ```go
@@ -1506,12 +1518,12 @@ func TestMissingConfigFileDoesNotError(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/config/ -v`
 Expected: compilation failure — `config` package doesn't exist
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `internal/config/config.go`:
 ```go
@@ -1582,12 +1594,12 @@ func Load() Config {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/config/ -v`
 Expected: all 3 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/config/config.go internal/config/config_test.go
@@ -1601,7 +1613,7 @@ git commit -m "feat: add config package with Viper defaults and env binding"
 **Files:**
 - Modify: `internal/config/config_test.go`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `internal/config/config_test.go`:
 ```go
@@ -1655,12 +1667,12 @@ func TestEnvOverridesConfigFile(t *testing.T) {
 
 Add `"path/filepath"` to the imports.
 
-- [ ] **Step 2: Run tests to verify they pass** (should already work with current implementation)
+- [x] **Step 2: Run tests to verify they pass** (should already work with current implementation)
 
 Run: `go test ./internal/config/ -v`
 Expected: all 5 tests PASS
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add internal/config/config_test.go
@@ -1675,7 +1687,7 @@ git commit -m "test: add config file loading and precedence tests"
 - Create: `internal/credentials/store.go`
 - Create: `internal/credentials/store_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/credentials/store_test.go`:
 ```go
@@ -1716,12 +1728,12 @@ func TestCredentialsStruct(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/credentials/ -v`
 Expected: compilation failure
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `internal/credentials/store.go`:
 ```go
@@ -1747,12 +1759,12 @@ type Store interface {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/credentials/ -v`
 Expected: all 2 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/credentials/store.go internal/credentials/store_test.go
@@ -1767,7 +1779,7 @@ git commit -m "feat: add credential Store interface and Credentials type"
 - Modify: `internal/credentials/store.go`
 - Modify: `internal/credentials/store_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `internal/credentials/store_test.go`:
 ```go
@@ -1860,12 +1872,12 @@ func TestMemoryStoreMultipleProfiles(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/credentials/ -run "TestMemory" -v`
 Expected: compilation failure — `NewMemoryStore` doesn't exist
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Add to `internal/credentials/store.go`:
 ```go
@@ -1898,12 +1910,12 @@ func (m *MemoryStore) Delete(profile string) error {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/credentials/ -v`
 Expected: all 8 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/credentials/store.go internal/credentials/store_test.go
@@ -1918,7 +1930,7 @@ git commit -m "feat: add MemoryStore implementation with round-trip tests"
 - Modify: `internal/credentials/store.go`
 - Modify: `internal/credentials/store_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `internal/credentials/store_test.go`:
 ```go
@@ -1938,12 +1950,12 @@ func TestKeyringStoreServiceName(t *testing.T) {
 
 Note: We do NOT test actual keyring read/write in unit tests — that requires a real OS keyring. The `KeyringStore` implementation delegates to `go-keyring` whose behavior we trust. We test only the service name construction and the mapping of `keyring.ErrNotFound` to `ErrNotConfigured`.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/credentials/ -run TestKeyring -v`
 Expected: compilation failure — `KeyringServiceName` doesn't exist
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Add to `internal/credentials/store.go`:
 ```go
@@ -2004,12 +2016,12 @@ func (k *KeyringStore) Delete(profile string) error {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/credentials/ -run TestKeyring -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/credentials/store.go internal/credentials/store_test.go
@@ -2024,7 +2036,7 @@ git commit -m "feat: add KeyringStore backed by OS keyring via go-keyring"
 - Modify: `internal/credentials/store.go`
 - Modify: `internal/credentials/store_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `internal/credentials/store_test.go`:
 ```go
@@ -2089,12 +2101,12 @@ func TestEnvStoreDeleteReturnsError(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/credentials/ -run TestEnvStore -v`
 Expected: compilation failure — `NewEnvStore` doesn't exist
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Add to `internal/credentials/store.go`:
 ```go
@@ -2135,12 +2147,12 @@ func (e *EnvStore) Delete(profile string) error {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/credentials/ -v`
 Expected: all tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/credentials/store.go internal/credentials/store_test.go
@@ -2155,7 +2167,7 @@ git commit -m "feat: add EnvStore for environment-variable credential fallback"
 - Modify: `internal/credentials/store.go`
 - Modify: `internal/credentials/store_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `internal/credentials/store_test.go`:
 ```go
@@ -2238,12 +2250,12 @@ func TestFallbackStoreDeleteFromPrimary(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/credentials/ -run TestFallback -v`
 Expected: compilation failure — `NewFallbackStore` doesn't exist
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Add to `internal/credentials/store.go`:
 ```go
@@ -2279,24 +2291,24 @@ func (f *FallbackStore) Delete(profile string) error {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/credentials/ -v`
 Expected: all tests PASS
 
-- [ ] **Step 5: Update testutil helpers to use credentials package**
+- [x] **Step 5: Update testutil helpers to use credentials package**
 
 Now that the credentials package exists, verify the `internal/testutil/helpers.go` compiles:
 
 Run: `go build ./internal/testutil/`
 Expected: successful compilation (no output)
 
-- [ ] **Step 6: Run full test suite**
+- [x] **Step 6: Run full test suite**
 
 Run: `go test ./... -v`
 Expected: all tests PASS
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add internal/credentials/store.go internal/credentials/store_test.go
@@ -2317,7 +2329,7 @@ git commit -m "feat: add FallbackStore for keyring-to-env credential fallback ch
 - Create: `internal/auth/auth.go`
 - Create: `internal/auth/auth_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/auth/auth_test.go`:
 ```go
@@ -2370,12 +2382,12 @@ func TestRequireAuthWithoutCredentials(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/auth/ -v`
 Expected: compilation failure
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `internal/auth/auth.go`:
 ```go
@@ -2401,12 +2413,12 @@ func RequireAuth(store credentials.Store, profile string) (credentials.Credentia
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/auth/ -v`
 Expected: all 2 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/auth/auth.go internal/auth/auth_test.go
@@ -2421,7 +2433,7 @@ git commit -m "feat: add RequireAuth guard for centralized auth checking"
 - Create: `internal/auth/set.go`
 - Create: `internal/auth/set_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/auth/set_test.go`:
 ```go
@@ -2490,12 +2502,12 @@ func TestSetResultHasNoMemberFieldInJSON(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/auth/ -run TestSet -v`
 Expected: compilation failure
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `internal/auth/set.go`:
 ```go
@@ -2528,12 +2540,12 @@ func Set(store credentials.Store, profile, apiKey, token string) (SetResult, err
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/auth/ -run TestSet -v`
 Expected: all 3 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/auth/set.go internal/auth/set_test.go
@@ -2548,7 +2560,7 @@ git commit -m "feat: add auth set logic — stores credentials without API valid
 - Create: `internal/auth/status.go`
 - Create: `internal/auth/status_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/auth/status_test.go`:
 ```go
@@ -2661,12 +2673,12 @@ func TestStatusInvalidCredentials(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/auth/ -run TestStatus -v`
 Expected: compilation failure
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `internal/auth/status.go`:
 ```go
@@ -2759,12 +2771,12 @@ func getMember(ctx context.Context, baseURL, apiKey, token string) (*Member, err
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/auth/ -run TestStatus -v`
 Expected: all 4 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/auth/status.go internal/auth/status_test.go
@@ -2779,7 +2791,7 @@ git commit -m "feat: add auth status with credential validation via GET /members
 - Create: `internal/auth/clear.go`
 - Create: `internal/auth/clear_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/auth/clear_test.go`:
 ```go
@@ -2847,12 +2859,12 @@ func TestClearAuthModeNullJSON(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/auth/ -run TestClear -v`
 Expected: compilation failure
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `internal/auth/clear.go`:
 ```go
@@ -2878,12 +2890,12 @@ func Clear(store credentials.Store, profile string) (ClearResult, error) {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/auth/ -run TestClear -v`
 Expected: all 3 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/auth/clear.go internal/auth/clear_test.go
@@ -2898,7 +2910,7 @@ git commit -m "feat: add auth clear — removes credentials and returns null aut
 - Create: `internal/auth/login.go`
 - Create: `internal/auth/login_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/auth/login_test.go`:
 ```go
@@ -3018,12 +3030,12 @@ func TestBuildAuthorizeURL(t *testing.T) {
 
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/auth/ -run "TestLogin|TestBuild" -v`
 Expected: compilation failure
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `internal/auth/login.go`:
 ```go
@@ -3087,12 +3099,12 @@ func CompleteLogin(ctx context.Context, store credentials.Store, profile, apiKey
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/auth/ -run "TestLogin|TestBuild" -v`
 Expected: all 3 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/auth/login.go internal/auth/login_test.go
@@ -3107,7 +3119,7 @@ git commit -m "feat: add login flow with CompleteLogin and BuildAuthorizeURL"
 - Create: `cmd/trello/auth.go`
 - Create: `cmd/trello/auth_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `cmd/trello/auth_test.go`:
 ```go
@@ -3241,12 +3253,12 @@ func TestAuthStatusNotConfigured(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./cmd/trello/ -run TestAuth -v`
 Expected: compilation failure — no auth commands registered
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `cmd/trello/auth.go`:
 ```go
@@ -3351,17 +3363,17 @@ func init() {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./cmd/trello/ -run TestAuth -v`
 Expected: all 4 tests PASS
 
-- [ ] **Step 5: Run full test suite**
+- [x] **Step 5: Run full test suite**
 
 Run: `go test ./... -v`
 Expected: all tests PASS
 
-- [ ] **Step 6: Verify from CLI**
+- [x] **Step 6: Verify from CLI**
 
 Run: `go run ./cmd/trello/ auth set --api-key test --token test`
 Expected: `{"ok":true,"data":{"configured":true,"authMode":"manual"}}`
@@ -3369,7 +3381,7 @@ Expected: `{"ok":true,"data":{"configured":true,"authMode":"manual"}}`
 Run: `go run ./cmd/trello/ auth clear`
 Expected: `{"ok":true,"data":{"configured":false,"authMode":null}}`
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add cmd/trello/auth.go cmd/trello/auth_test.go
@@ -3389,7 +3401,7 @@ git commit -m "feat: wire auth commands (set, clear, status, login) into Cobra"
 **Files:**
 - Create: `internal/trello/types.go`
 
-- [ ] **Step 1: Create resource types**
+- [x] **Step 1: Create resource types**
 
 Create `internal/trello/types.go`:
 ```go
@@ -3536,12 +3548,12 @@ type ActionResult struct {
 }
 ```
 
-- [ ] **Step 2: Verify it compiles**
+- [x] **Step 2: Verify it compiles**
 
 Run: `go build ./internal/trello/`
 Expected: successful compilation
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add internal/trello/types.go
@@ -3556,7 +3568,7 @@ git commit -m "feat: add Trello resource types matching command spec response fi
 - Create: `internal/trello/client.go`
 - Create: `internal/trello/client_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `internal/trello/client_test.go`:
 ```go
@@ -3711,12 +3723,12 @@ func containsParam(query, param string) bool {
 
 Add `"strings"` to the imports.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/trello/ -run TestClient -v`
 Expected: compilation failure — `trello.NewClient` doesn't exist
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `internal/trello/client.go`:
 ```go
@@ -3856,12 +3868,12 @@ func (c *Client) do(ctx context.Context, method, path string, params map[string]
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `go test ./internal/trello/ -run TestClient -v`
 Expected: compilation failure — `mapHTTPError` doesn't exist yet. Create a stub.
 
-- [ ] **Step 5: Create error mapping stub**
+- [x] **Step 5: Create error mapping stub**
 
 Create `internal/trello/errors.go`:
 ```go
@@ -3889,12 +3901,12 @@ func mapHTTPError(resp *http.Response) error {
 }
 ```
 
-- [ ] **Step 6: Run tests to verify they pass**
+- [x] **Step 6: Run tests to verify they pass**
 
 Run: `go test ./internal/trello/ -run TestClient -v`
 Expected: all 5 tests PASS
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add internal/trello/client.go internal/trello/client_test.go internal/trello/errors.go
