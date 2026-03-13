@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/Scale-Flow/trello-cli/internal/auth"
+	"github.com/Scale-Flow/trello-cli/internal/config"
 	"github.com/Scale-Flow/trello-cli/internal/contract"
 	"github.com/Scale-Flow/trello-cli/internal/credentials"
 	"github.com/spf13/cobra"
@@ -22,6 +24,7 @@ type loginBrowserOpener = auth.BrowserOpener
 type loginOutputWriter = io.Writer
 
 var runAuthLogin = auth.Login
+var runAuthLoginWithDeviceFlow = auth.LoginWithDeviceFlow
 
 func getCredStore() credentials.Store {
 	if credStore != nil {
@@ -107,14 +110,35 @@ var authLoginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Authenticate via interactive browser login",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		cfg := config.Load()
+		store := getCredStore()
+		stderr := cmd.ErrOrStderr()
+
+		// Try device flow first if pairing service is configured
+		if cfg.PairingServiceURL != "" {
+			result, err := runAuthLoginWithDeviceFlow(
+				cmd.Context(),
+				store,
+				"default",
+				trelloBaseURL,
+				cfg.PairingServiceURL,
+				stderr,
+			)
+			if err == nil {
+				return output(cmd.OutOrStdout(), result)
+			}
+			// Fall back to browser-based flow
+			fmt.Fprintf(stderr, "Device flow unavailable, falling back to browser login...\n")
+		}
+
 		result, err := runAuthLogin(
 			cmd.Context(),
-			getCredStore(),
+			store,
 			"default",
 			trelloBaseURL,
 			"",
 			nil,
-			cmd.ErrOrStderr(),
+			stderr,
 		)
 		if err != nil {
 			return err

@@ -450,6 +450,7 @@ func setupTestAuth(t *testing.T) {
 	credStore = credentials.NewMemoryStore()
 	apiClient = nil
 	runAuthLogin = auth.Login
+	runAuthLoginWithDeviceFlow = auth.LoginWithDeviceFlow
 	// Reset root command output state to avoid cross-test contamination
 	rootCmd.SetOut(nil)
 	rootCmd.SetArgs(nil)
