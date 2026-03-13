@@ -1,19 +1,20 @@
 # Trello CLI
 
 [![CI](https://github.com/Scale-Flow/trello-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/Scale-Flow/trello-cli/actions/workflows/ci.yml)
-[![Go Version](https://img.shields.io/github/go-mod-go-version/Scale-Flow/trello-cli)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/Go-1.26-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/Scale-Flow/trello-cli)](https://github.com/Scale-Flow/trello-cli/releases)
+[![Release](https://img.shields.io/github/v/release/Scale-Flow/trello-cli?include_prereleases)](https://github.com/Scale-Flow/trello-cli/releases)
 
-A cross-platform Go CLI for Trello with machine-friendly JSON output.
+A CLI for Trello built for AI agents and Claude Code — every command returns structured JSON, making it ideal for autonomous workflows and agent-driven project management.
 
-Every command writes a JSON envelope to `stdout`, which makes the CLI useful both for terminal users and for automation that needs predictable responses.
+Includes a ready-to-use **Claude Code skill** so Claude can manage your Trello boards, cards, and lists out of the box.
 
 ## Highlights
 
-- Stable JSON success and error envelopes
+- **Agent-first design** — stable JSON envelopes on every command for reliable tool use
+- **Claude Code skill included** — install once, and Claude can manage Trello autonomously
+- Broad command coverage: boards, lists, cards, comments, labels, members, checklists, attachments, custom fields, and search
 - Interactive browser login and manual credential setup
-- Broad Trello command coverage for boards, lists, cards, comments, labels, members, checklists, attachments, custom fields, and search
 - Single-binary Go CLI with minimal runtime requirements
 
 ## Installation
@@ -34,6 +35,32 @@ go install github.com/Scale-Flow/trello-cli/cmd/trello@latest
 ### Download Binary
 
 Download the latest release for your platform from [GitHub Releases](https://github.com/Scale-Flow/trello-cli/releases).
+
+## Claude Code Skill
+
+This repo ships a Claude Code skill that lets Claude manage Trello autonomously — creating cards, moving work across lists, searching boards, and more.
+
+### Install the Skill
+
+Add the skill to your project's `.claude/settings.json`:
+
+```json
+{
+  "skills": [
+    "github:Scale-Flow/trello-cli//using-trello-cli"
+  ]
+}
+```
+
+Or install globally in `~/.claude/settings.json` to use it across all projects.
+
+Once installed, Claude Code will automatically use the skill whenever you ask it to interact with Trello. Try prompts like:
+
+- "Create a card on my Project board in the To Do list"
+- "Move all cards labeled 'done' to the Done list"
+- "Search for cards mentioning 'bug' across all boards"
+
+> **Note:** The `trello` binary must be installed and authenticated (see below) for the skill to work.
 
 ## Prerequisites: Trello API Key
 
