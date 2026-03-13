@@ -28,6 +28,10 @@ type mockAPI struct {
 	moveCardFn         func(ctx context.Context, cardID, listID string, pos *float64) (trello.Card, error)
 	archiveCardFn      func(ctx context.Context, cardID string) (trello.Card, error)
 	deleteCardFn       func(ctx context.Context, cardID string) error
+	listCommentsFn     func(ctx context.Context, cardID string) ([]trello.Comment, error)
+	addCommentFn       func(ctx context.Context, cardID, text string) (trello.Comment, error)
+	updateCommentFn    func(ctx context.Context, actionID, text string) (trello.Comment, error)
+	deleteCommentFn    func(ctx context.Context, actionID string) error
 }
 
 func (m *mockAPI) ListBoards(ctx context.Context) ([]trello.Board, error) {

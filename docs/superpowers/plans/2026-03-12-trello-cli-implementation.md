@@ -5186,8 +5186,8 @@ Commands:
 Response shapes for void operations:
 - `comments delete` returns `DeleteResult{Deleted: true, ID: actionID}` in the success envelope, same pattern as `cards delete`
 
-- [ ] **Step 1-4: Write tests, implement, verify**
-- [ ] **Step 5: Commit**
+- [x] **Step 1-4: Write tests, implement, verify**
+- [x] **Step 5: Commit**
 
 ```bash
 git add cmd/trello/comments.go cmd/trello/comments_test.go
