@@ -38,6 +38,60 @@ type Client struct {
 	opts       ClientOptions
 }
 
+// API defines the interface for Trello API operations.
+// Command handlers depend on this interface; tests mock it.
+type API interface {
+	// Boards
+	ListBoards(ctx context.Context) ([]Board, error)
+	GetBoard(ctx context.Context, boardID string) (Board, error)
+	// Lists
+	ListLists(ctx context.Context, boardID string) ([]List, error)
+	CreateList(ctx context.Context, boardID, name string) (List, error)
+	UpdateList(ctx context.Context, listID string, params UpdateListParams) (List, error)
+	ArchiveList(ctx context.Context, listID string) (List, error)
+	MoveList(ctx context.Context, listID, boardID string, pos *float64) (List, error)
+	// Cards
+	ListCardsByBoard(ctx context.Context, boardID string) ([]Card, error)
+	ListCardsByList(ctx context.Context, listID string) ([]Card, error)
+	GetCard(ctx context.Context, cardID string) (Card, error)
+	CreateCard(ctx context.Context, params CreateCardParams) (Card, error)
+	UpdateCard(ctx context.Context, cardID string, params UpdateCardParams) (Card, error)
+	MoveCard(ctx context.Context, cardID, listID string, pos *float64) (Card, error)
+	ArchiveCard(ctx context.Context, cardID string) (Card, error)
+	DeleteCard(ctx context.Context, cardID string) error
+	// Comments
+	ListComments(ctx context.Context, cardID string) ([]Comment, error)
+	AddComment(ctx context.Context, cardID, text string) (Comment, error)
+	UpdateComment(ctx context.Context, actionID, text string) (Comment, error)
+	DeleteComment(ctx context.Context, actionID string) error
+	// Checklists
+	ListChecklists(ctx context.Context, cardID string) ([]Checklist, error)
+	CreateChecklist(ctx context.Context, cardID, name string) (Checklist, error)
+	DeleteChecklist(ctx context.Context, checklistID string) error
+	AddCheckItem(ctx context.Context, checklistID, name string) (CheckItem, error)
+	UpdateCheckItem(ctx context.Context, cardID, itemID, state string) (CheckItem, error)
+	DeleteCheckItem(ctx context.Context, checklistID, itemID string) error
+	// Attachments
+	ListAttachments(ctx context.Context, cardID string) ([]Attachment, error)
+	AddFileAttachment(ctx context.Context, cardID, filePath string, name *string) (Attachment, error)
+	AddURLAttachment(ctx context.Context, cardID, urlStr string, name *string) (Attachment, error)
+	DeleteAttachment(ctx context.Context, cardID, attachmentID string) error
+	// Labels
+	ListLabels(ctx context.Context, boardID string) ([]Label, error)
+	CreateLabel(ctx context.Context, boardID, name, color string) (Label, error)
+	AddLabelToCard(ctx context.Context, cardID, labelID string) error
+	RemoveLabelFromCard(ctx context.Context, cardID, labelID string) error
+	// Members
+	ListMembers(ctx context.Context, boardID string) ([]Member, error)
+	AddMemberToCard(ctx context.Context, cardID, memberID string) error
+	RemoveMemberFromCard(ctx context.Context, cardID, memberID string) error
+	// Search
+	SearchCards(ctx context.Context, query string) (CardSearchResult, error)
+	SearchBoards(ctx context.Context, query string) (BoardSearchResult, error)
+	// Auth
+	GetMe(ctx context.Context) (Member, error)
+}
+
 // NewClient creates a new Trello API client.
 func NewClient(baseURL, apiKey, token string, opts ClientOptions) *Client {
 	return &Client{
@@ -165,3 +219,125 @@ func (c *Client) do(ctx context.Context, method, path string, params map[string]
 	}
 	return fmt.Errorf("request failed after %d attempts", maxAttempts)
 }
+
+// Compile-time check that Client implements API.
+var _ API = (*Client)(nil)
+
+// Stub methods — implemented in resource-specific files.
+func (c *Client) ListBoards(ctx context.Context) ([]Board, error) { return nil, nil }
+
+func (c *Client) GetBoard(ctx context.Context, boardID string) (Board, error) { return Board{}, nil }
+
+func (c *Client) ListLists(ctx context.Context, boardID string) ([]List, error) { return nil, nil }
+
+func (c *Client) CreateList(ctx context.Context, boardID, name string) (List, error) {
+	return List{}, nil
+}
+
+func (c *Client) UpdateList(ctx context.Context, listID string, params UpdateListParams) (List, error) {
+	return List{}, nil
+}
+
+func (c *Client) ArchiveList(ctx context.Context, listID string) (List, error) { return List{}, nil }
+
+func (c *Client) MoveList(ctx context.Context, listID, boardID string, pos *float64) (List, error) {
+	return List{}, nil
+}
+
+func (c *Client) ListCardsByBoard(ctx context.Context, boardID string) ([]Card, error) {
+	return nil, nil
+}
+
+func (c *Client) ListCardsByList(ctx context.Context, listID string) ([]Card, error) { return nil, nil }
+
+func (c *Client) GetCard(ctx context.Context, cardID string) (Card, error) { return Card{}, nil }
+
+func (c *Client) CreateCard(ctx context.Context, params CreateCardParams) (Card, error) {
+	return Card{}, nil
+}
+
+func (c *Client) UpdateCard(ctx context.Context, cardID string, params UpdateCardParams) (Card, error) {
+	return Card{}, nil
+}
+
+func (c *Client) MoveCard(ctx context.Context, cardID, listID string, pos *float64) (Card, error) {
+	return Card{}, nil
+}
+
+func (c *Client) ArchiveCard(ctx context.Context, cardID string) (Card, error) { return Card{}, nil }
+
+func (c *Client) DeleteCard(ctx context.Context, cardID string) error { return nil }
+
+func (c *Client) ListComments(ctx context.Context, cardID string) ([]Comment, error) { return nil, nil }
+
+func (c *Client) AddComment(ctx context.Context, cardID, text string) (Comment, error) {
+	return Comment{}, nil
+}
+
+func (c *Client) UpdateComment(ctx context.Context, actionID, text string) (Comment, error) {
+	return Comment{}, nil
+}
+
+func (c *Client) DeleteComment(ctx context.Context, actionID string) error { return nil }
+
+func (c *Client) ListChecklists(ctx context.Context, cardID string) ([]Checklist, error) {
+	return nil, nil
+}
+
+func (c *Client) CreateChecklist(ctx context.Context, cardID, name string) (Checklist, error) {
+	return Checklist{}, nil
+}
+
+func (c *Client) DeleteChecklist(ctx context.Context, checklistID string) error { return nil }
+
+func (c *Client) AddCheckItem(ctx context.Context, checklistID, name string) (CheckItem, error) {
+	return CheckItem{}, nil
+}
+
+func (c *Client) UpdateCheckItem(ctx context.Context, cardID, itemID, state string) (CheckItem, error) {
+	return CheckItem{}, nil
+}
+
+func (c *Client) DeleteCheckItem(ctx context.Context, checklistID, itemID string) error { return nil }
+
+func (c *Client) ListAttachments(ctx context.Context, cardID string) ([]Attachment, error) {
+	return nil, nil
+}
+
+func (c *Client) AddFileAttachment(ctx context.Context, cardID, filePath string, name *string) (Attachment, error) {
+	return Attachment{}, nil
+}
+
+func (c *Client) AddURLAttachment(ctx context.Context, cardID, urlStr string, name *string) (Attachment, error) {
+	return Attachment{}, nil
+}
+
+func (c *Client) DeleteAttachment(ctx context.Context, cardID, attachmentID string) error { return nil }
+
+func (c *Client) ListLabels(ctx context.Context, boardID string) ([]Label, error) { return nil, nil }
+
+func (c *Client) CreateLabel(ctx context.Context, boardID, name, color string) (Label, error) {
+	return Label{}, nil
+}
+
+func (c *Client) AddLabelToCard(ctx context.Context, cardID, labelID string) error { return nil }
+
+func (c *Client) RemoveLabelFromCard(ctx context.Context, cardID, labelID string) error { return nil }
+
+func (c *Client) ListMembers(ctx context.Context, boardID string) ([]Member, error) { return nil, nil }
+
+func (c *Client) AddMemberToCard(ctx context.Context, cardID, memberID string) error { return nil }
+
+func (c *Client) RemoveMemberFromCard(ctx context.Context, cardID, memberID string) error {
+	return nil
+}
+
+func (c *Client) SearchCards(ctx context.Context, query string) (CardSearchResult, error) {
+	return CardSearchResult{}, nil
+}
+
+func (c *Client) SearchBoards(ctx context.Context, query string) (BoardSearchResult, error) {
+	return BoardSearchResult{}, nil
+}
+
+func (c *Client) GetMe(ctx context.Context) (Member, error) { return Member{}, nil }

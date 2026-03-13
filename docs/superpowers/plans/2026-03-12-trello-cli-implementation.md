@@ -4321,7 +4321,7 @@ git commit -m "feat: add retry logic with exponential backoff and mutation safet
 **Files:**
 - Modify: `internal/trello/client.go`
 
-- [ ] **Step 1: Define the Client interface for mocking**
+- [x] **Step 1: Define the Client interface for mocking**
 
 Add to `internal/trello/client.go`:
 ```go
@@ -4380,7 +4380,7 @@ type API interface {
 }
 ```
 
-- [ ] **Step 2: Verify Client struct can satisfy the interface (compile check)**
+- [x] **Step 2: Verify Client struct can satisfy the interface (compile check)**
 
 Add a compile-time assertion at the bottom of `client.go`:
 ```go
@@ -4433,17 +4433,17 @@ func (c *Client) SearchBoards(ctx context.Context, query string) (BoardSearchRes
 func (c *Client) GetMe(ctx context.Context) (Member, error)                              { return Member{}, nil }
 ```
 
-- [ ] **Step 3: Verify compilation**
+- [x] **Step 3: Verify compilation**
 
 Run: `go build ./internal/trello/`
 Expected: successful compilation
 
-- [ ] **Step 4: Run full test suite**
+- [x] **Step 4: Run full test suite**
 
 Run: `go test ./... -v`
 Expected: all tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/trello/client.go
