@@ -82,5 +82,11 @@ func (c *Client) SetCardCustomFieldItem(ctx context.Context, cardID, fieldID str
 
 func (c *Client) ClearCardCustomFieldItem(ctx context.Context, cardID, fieldID string) error {
 	path := fmt.Sprintf("/1/cards/%s/customField/%s/item", cardID, fieldID)
-	return c.Put(ctx, path, nil, nil)
+	// Trello requires a JSON body to clear a field: "value":"" for scalar
+	// types, "idValue":"" for list types. Sending both works for all types.
+	body := struct {
+		Value   string `json:"value"`
+		IDValue string `json:"idValue"`
+	}{Value: "", IDValue: ""}
+	return c.PutJSON(ctx, path, body, nil)
 }

@@ -3,7 +3,6 @@ package trello_test
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -613,12 +612,15 @@ func TestClearCardCustomFieldItem(t *testing.T) {
 		if r.URL.Path != "/1/cards/c1/customField/cf1/item" {
 			t.Errorf("path = %s, want /1/cards/c1/customField/cf1/item", r.URL.Path)
 		}
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			t.Fatalf("ReadAll() error: %v", err)
+		var payload map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Fatalf("Decode() error: %v", err)
 		}
-		if len(body) != 0 {
-			t.Fatalf("body = %q, want empty", string(body))
+		if payload["value"] != "" {
+			t.Fatalf("value = %v, want empty string", payload["value"])
+		}
+		if payload["idValue"] != "" {
+			t.Fatalf("idValue = %v, want empty string", payload["idValue"])
 		}
 		w.WriteHeader(http.StatusOK)
 	}))
