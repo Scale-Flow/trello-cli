@@ -5398,11 +5398,11 @@ func (c *Client) postMultipartFile(ctx context.Context, path, filePath string, p
 
 Additional imports needed: `"bytes"`, `"io"`, `"mime/multipart"`, `"os"`, `"path/filepath"`.
 
-- [ ] **Step 1-4: Write tests, implement, verify**
+- [x] **Step 1-4: Write tests, implement, verify**
 
 For `AddFileAttachment` test, create a temp file and verify the server receives multipart data.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/trello/attachments.go internal/trello/attachments_test.go internal/trello/client.go

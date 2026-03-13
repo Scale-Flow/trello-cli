@@ -128,8 +128,7 @@ func (c *Client) Delete(ctx context.Context, path string, result any) error {
 
 // PostMultipart performs a multipart file upload POST (for attachments).
 func (c *Client) PostMultipart(ctx context.Context, path string, params map[string]string, filePath string, result any) error {
-	// Multipart upload implementation — handled in attachments.go
-	return nil
+	return c.postMultipartFile(ctx, path, filePath, params, result)
 }
 
 // buildURL constructs the full URL with auth query params (key, token) and any
@@ -224,20 +223,6 @@ func (c *Client) do(ctx context.Context, method, path string, params map[string]
 var _ API = (*Client)(nil)
 
 // Stub methods — implemented in resource-specific files.
-func (c *Client) ListAttachments(ctx context.Context, cardID string) ([]Attachment, error) {
-	return nil, nil
-}
-
-func (c *Client) AddFileAttachment(ctx context.Context, cardID, filePath string, name *string) (Attachment, error) {
-	return Attachment{}, nil
-}
-
-func (c *Client) AddURLAttachment(ctx context.Context, cardID, urlStr string, name *string) (Attachment, error) {
-	return Attachment{}, nil
-}
-
-func (c *Client) DeleteAttachment(ctx context.Context, cardID, attachmentID string) error { return nil }
-
 func (c *Client) ListLabels(ctx context.Context, boardID string) ([]Label, error) { return nil, nil }
 
 func (c *Client) CreateLabel(ctx context.Context, boardID, name, color string) (Label, error) {
