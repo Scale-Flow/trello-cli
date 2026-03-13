@@ -224,30 +224,6 @@ func (c *Client) do(ctx context.Context, method, path string, params map[string]
 var _ API = (*Client)(nil)
 
 // Stub methods — implemented in resource-specific files.
-func (c *Client) ListCardsByBoard(ctx context.Context, boardID string) ([]Card, error) {
-	return nil, nil
-}
-
-func (c *Client) ListCardsByList(ctx context.Context, listID string) ([]Card, error) { return nil, nil }
-
-func (c *Client) GetCard(ctx context.Context, cardID string) (Card, error) { return Card{}, nil }
-
-func (c *Client) CreateCard(ctx context.Context, params CreateCardParams) (Card, error) {
-	return Card{}, nil
-}
-
-func (c *Client) UpdateCard(ctx context.Context, cardID string, params UpdateCardParams) (Card, error) {
-	return Card{}, nil
-}
-
-func (c *Client) MoveCard(ctx context.Context, cardID, listID string, pos *float64) (Card, error) {
-	return Card{}, nil
-}
-
-func (c *Client) ArchiveCard(ctx context.Context, cardID string) (Card, error) { return Card{}, nil }
-
-func (c *Client) DeleteCard(ctx context.Context, cardID string) error { return nil }
-
 func (c *Client) ListComments(ctx context.Context, cardID string) ([]Comment, error) { return nil, nil }
 
 func (c *Client) AddComment(ctx context.Context, cardID, text string) (Comment, error) {

@@ -4945,7 +4945,7 @@ git commit -m "feat: add lists commands (list, create, update, archive, move)"
 - Create: `internal/trello/cards.go`
 - Create: `internal/trello/cards_test.go`
 
-- [ ] **Step 1: Write failing tests** for all 7 card methods:
+- [x] **Step 1: Write failing tests** for all 7 card methods:
 - `TestListCardsByBoard` — GET /1/boards/{id}/cards
 - `TestListCardsByList` — GET /1/lists/{id}/cards
 - `TestGetCard` — GET /1/cards/{id}
@@ -4955,7 +4955,7 @@ git commit -m "feat: add lists commands (list, create, update, archive, move)"
 - `TestArchiveCard` — PUT /1/cards/{id}, verify closed=true
 - `TestDeleteCard` — DELETE /1/cards/{id}
 
-- [ ] **Step 2: Implement methods**
+- [x] **Step 2: Implement methods**
 
 Create `internal/trello/cards.go`:
 ```go
@@ -5048,8 +5048,8 @@ func (c *Client) DeleteCard(ctx context.Context, cardID string) error {
 
 Remove card stubs from `client.go`.
 
-- [ ] **Step 3: Run tests, verify PASS**
-- [ ] **Step 4: Commit**
+- [x] **Step 3: Run tests, verify PASS**
+- [x] **Step 4: Commit**
 
 ```bash
 git add internal/trello/cards.go internal/trello/cards_test.go internal/trello/client.go
