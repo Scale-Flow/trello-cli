@@ -1,9 +1,11 @@
 package trello
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -60,6 +62,19 @@ type API interface {
 	MoveCard(ctx context.Context, cardID, listID string, pos *float64) (Card, error)
 	ArchiveCard(ctx context.Context, cardID string) (Card, error)
 	DeleteCard(ctx context.Context, cardID string) error
+	// Custom Fields
+	ListCustomFieldsByBoard(ctx context.Context, boardID string) ([]CustomField, error)
+	GetCustomField(ctx context.Context, fieldID string) (CustomField, error)
+	CreateCustomField(ctx context.Context, params CreateCustomFieldParams) (CustomField, error)
+	UpdateCustomField(ctx context.Context, fieldID string, params UpdateCustomFieldParams) (CustomField, error)
+	DeleteCustomField(ctx context.Context, fieldID string) error
+	ListCustomFieldOptions(ctx context.Context, fieldID string) ([]CustomFieldOption, error)
+	CreateCustomFieldOption(ctx context.Context, fieldID string, params CreateCustomFieldOptionParams) (CustomFieldOption, error)
+	UpdateCustomFieldOption(ctx context.Context, fieldID, optionID string, params UpdateCustomFieldOptionParams) (CustomFieldOption, error)
+	DeleteCustomFieldOption(ctx context.Context, fieldID, optionID string) error
+	ListCardCustomFieldItems(ctx context.Context, cardID string) ([]CardCustomFieldItem, error)
+	SetCardCustomFieldItem(ctx context.Context, cardID, fieldID string, params SetCardCustomFieldItemParams) (CardCustomFieldItem, error)
+	ClearCardCustomFieldItem(ctx context.Context, cardID, fieldID string) error
 	// Comments
 	ListComments(ctx context.Context, cardID string) ([]Comment, error)
 	AddComment(ctx context.Context, cardID, text string) (Comment, error)
@@ -117,9 +132,19 @@ func (c *Client) Post(ctx context.Context, path string, params map[string]string
 	return c.do(ctx, http.MethodPost, path, params, result)
 }
 
+// PostJSON performs an authenticated POST request with a JSON body.
+func (c *Client) PostJSON(ctx context.Context, path string, body any, result any) error {
+	return c.doJSON(ctx, http.MethodPost, path, body, result)
+}
+
 // Put performs an authenticated PUT request with params as query parameters.
 func (c *Client) Put(ctx context.Context, path string, params map[string]string, result any) error {
 	return c.do(ctx, http.MethodPut, path, params, result)
+}
+
+// PutJSON performs an authenticated PUT request with a JSON body.
+func (c *Client) PutJSON(ctx context.Context, path string, body any, result any) error {
+	return c.doJSON(ctx, http.MethodPut, path, body, result)
 }
 
 // Delete performs an authenticated DELETE request.
@@ -166,6 +191,22 @@ func allowsRepeatedParam(key string) bool {
 }
 
 func (c *Client) do(ctx context.Context, method, path string, params map[string]string, result any) error {
+	return c.doWithBody(ctx, method, path, params, nil, "", result)
+}
+
+func (c *Client) doJSON(ctx context.Context, method, path string, body any, result any) error {
+	var payload []byte
+	if body != nil {
+		var err error
+		payload, err = json.Marshal(body)
+		if err != nil {
+			return fmt.Errorf("failed to marshal request body: %w", err)
+		}
+	}
+	return c.doWithBody(ctx, method, path, nil, payload, "application/json", result)
+}
+
+func (c *Client) doWithBody(ctx context.Context, method, path string, params map[string]string, body []byte, contentType string, result any) error {
 	fullURL := c.buildURL(path, params)
 
 	maxAttempts := 1 + c.opts.MaxRetries
@@ -184,9 +225,17 @@ func (c *Client) do(ctx context.Context, method, path string, params map[string]
 			}
 		}
 
-		req, err := http.NewRequestWithContext(ctx, method, fullURL, nil)
+		var bodyReader io.Reader
+		if body != nil {
+			bodyReader = bytes.NewReader(body)
+		}
+
+		req, err := http.NewRequestWithContext(ctx, method, fullURL, bodyReader)
 		if err != nil {
 			return fmt.Errorf("failed to create request: %w", err)
+		}
+		if contentType != "" && body != nil {
+			req.Header.Set("Content-Type", contentType)
 		}
 
 		start := time.Now()

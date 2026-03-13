@@ -1,5 +1,7 @@
 package trello
 
+import "encoding/json"
+
 // Board represents a Trello board.
 type Board struct {
 	ID     string `json:"id"`
@@ -148,4 +150,119 @@ type DeleteResult struct {
 type ActionResult struct {
 	Success bool   `json:"success"`
 	ID      string `json:"id"`
+}
+
+// CustomField represents a Trello custom field.
+type CustomField struct {
+	ID        string              `json:"id"`
+	IDModel   string              `json:"idModel"`
+	ModelType string              `json:"modelType"`
+	Name      string              `json:"name"`
+	Type      string              `json:"type"`
+	Display   CustomFieldDisplay  `json:"display"`
+	Options   []CustomFieldOption `json:"options,omitempty"`
+}
+
+// CustomFieldDisplay holds render preferences for a custom field.
+type CustomFieldDisplay struct {
+	CardFront bool `json:"cardFront"`
+	CardBack  bool `json:"cardBack"`
+}
+
+// CustomFieldOption describes one of the selectable values for list-type fields.
+type CustomFieldOption struct {
+	ID            string                 `json:"id,omitempty"`
+	IDCustomField string                 `json:"idCustomField,omitempty"`
+	Color         string                 `json:"color,omitempty"`
+	Value         CustomFieldOptionValue `json:"value"`
+}
+
+// CustomFieldOptionValue contains the user-visible text for an option.
+type CustomFieldOptionValue struct {
+	Text string `json:"text"`
+}
+
+// CustomFieldItem represents a card's current entry for a custom field.
+type CustomFieldItem struct {
+	ID            string               `json:"id"`
+	IDCustomField string               `json:"idCustomField"`
+	IDValue       string               `json:"idValue,omitempty"`
+	Value         CustomFieldItemValue `json:"value,omitempty"`
+}
+
+// CustomFieldItemValue models the various payloads Trello accepts and returns for an item.
+type CustomFieldItemValue struct {
+	IDValue string `json:"idValue,omitempty"`
+	Text    string `json:"text,omitempty"`
+	Number  string `json:"number,omitempty"`
+	Date    string `json:"date,omitempty"`
+	Checked string `json:"checked,omitempty"`
+}
+
+// CardCustomFieldItem is an alias for the card-specific custom field item shape.
+type CardCustomFieldItem = CustomFieldItem
+
+// CardCustomFieldItemValue mirrors CustomFieldItemValue for card interactions.
+type CardCustomFieldItemValue = CustomFieldItemValue
+
+// CreateCustomFieldParams holds request fields when creating a custom field.
+type CreateCustomFieldParams struct {
+	IDModel   string              `json:"idModel"`
+	ModelType string              `json:"modelType"`
+	Name      string              `json:"name"`
+	Type      string              `json:"type"`
+	Display   CustomFieldDisplay  `json:"display"`
+	Options   []CustomFieldOption `json:"options,omitempty"`
+}
+
+// UpdateCustomFieldParams contains fields that can be updated on a custom field.
+type UpdateCustomFieldParams struct {
+	Name    *string             `json:"name,omitempty"`
+	Display *CustomFieldDisplay `json:"display,omitempty"`
+}
+
+// CreateCustomFieldOptionParams contains fields for creating a new option.
+type CreateCustomFieldOptionParams struct {
+	Value CustomFieldOptionValue `json:"value"`
+	Color string                 `json:"color,omitempty"`
+}
+
+// UpdateCustomFieldOptionParams contains updatable option fields.
+type UpdateCustomFieldOptionParams struct {
+	Value *CustomFieldOptionValue `json:"value,omitempty"`
+	Color *string                 `json:"color,omitempty"`
+}
+
+// SetCardCustomFieldItemParams holds the payload for setting a card custom field value.
+type SetCardCustomFieldItemParams struct {
+	Value   CardCustomFieldItemValue `json:"-"`
+	IDValue string                   `json:"-"`
+}
+
+// MarshalJSON ensures only the correct custom field payload is emitted.
+func (p SetCardCustomFieldItemParams) MarshalJSON() ([]byte, error) {
+	if p.IDValue != "" {
+		return json.Marshal(struct {
+			IDValue string `json:"idValue"`
+		}{p.IDValue})
+	}
+	if p.Value.isIDValueOnly() {
+		return json.Marshal(struct {
+			IDValue string `json:"idValue"`
+		}{p.Value.IDValue})
+	}
+	if !p.Value.isZero() {
+		return json.Marshal(struct {
+			Value CardCustomFieldItemValue `json:"value"`
+		}{p.Value})
+	}
+	return []byte(`{}`), nil
+}
+
+func (v CardCustomFieldItemValue) isZero() bool {
+	return v.IDValue == "" && v.Text == "" && v.Number == "" && v.Date == "" && v.Checked == ""
+}
+
+func (v CardCustomFieldItemValue) isIDValueOnly() bool {
+	return v.IDValue != "" && v.Text == "" && v.Number == "" && v.Date == "" && v.Checked == ""
 }
