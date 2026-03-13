@@ -113,6 +113,7 @@ Top-level commands:
 
 - `boards list`
 - `boards get --board <board-id>`
+- `boards create --name <name> [--desc <text>] [--default-lists] [--default-labels] [--organization <org-id>] [--source-board <board-id>]`
 
 ### Lists
 
@@ -198,9 +199,15 @@ Top-level commands:
 Preferred workflow shape:
 
 1. Authenticate
-2. Discover resource IDs
+2. Create or discover resource IDs
 3. Perform mutations
 4. Re-fetch resource state if confirmation is needed
+
+Board bootstrap example:
+
+1. `trello boards create --name "Project Alpha" --default-lists`
+2. `trello boards get --board <board-id>`
+3. `trello lists list --board <board-id>`
 
 ## Common Task Recipes
 

@@ -60,6 +60,7 @@ Use `--pretty` on any command to indent the JSON.
 
 ```bash
 go run ./cmd/trello boards list
+go run ./cmd/trello boards create --name "Project Alpha" --default-lists
 go run ./cmd/trello lists list --board <board-id>
 go run ./cmd/trello cards list --list <list-id>
 go run ./cmd/trello cards create --list <list-id> --name "Follow up with customer"
@@ -68,11 +69,11 @@ go run ./cmd/trello search cards --query "customer"
 
 ## Documentation
 
-- [Getting Started](/Users/brettmcdowell/Dev/Trello_CLI/docs/getting-started.md)
-- [Authentication](/Users/brettmcdowell/Dev/Trello_CLI/docs/concepts/authentication.md)
-- [JSON Output](/Users/brettmcdowell/Dev/Trello_CLI/docs/concepts/json-output.md)
-- [Errors](/Users/brettmcdowell/Dev/Trello_CLI/docs/concepts/errors.md)
-- [Configuration](/Users/brettmcdowell/Dev/Trello_CLI/docs/concepts/configuration.md)
-- [Command Reference](/Users/brettmcdowell/Dev/Trello_CLI/docs/commands/README.md)
-- [Examples](/Users/brettmcdowell/Dev/Trello_CLI/docs/examples/create-a-card.md)
-- [LLM Digest](/Users/brettmcdowell/Dev/Trello_CLI/LLM.md)
+- [Getting Started](docs/getting-started.md)
+- [Authentication](docs/concepts/authentication.md)
+- [JSON Output](docs/concepts/json-output.md)
+- [Errors](docs/concepts/errors.md)
+- [Configuration](docs/concepts/configuration.md)
+- [Command Reference](docs/commands/README.md)
+- [Examples](docs/examples/create-a-card.md)
+- [LLM Digest](LLM.md)

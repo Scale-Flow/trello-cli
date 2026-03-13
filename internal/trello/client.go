@@ -44,6 +44,7 @@ type API interface {
 	// Boards
 	ListBoards(ctx context.Context) ([]Board, error)
 	GetBoard(ctx context.Context, boardID string) (Board, error)
+	CreateBoard(ctx context.Context, params CreateBoardParams) (Board, error)
 	// Lists
 	ListLists(ctx context.Context, boardID string) ([]List, error)
 	CreateList(ctx context.Context, boardID, name string) (List, error)

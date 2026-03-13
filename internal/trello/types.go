@@ -9,6 +9,16 @@ type Board struct {
 	URL    string `json:"url"`
 }
 
+// CreateBoardParams holds fields for board creation.
+type CreateBoardParams struct {
+	Name           string  `json:"name"`
+	Desc           *string `json:"desc,omitempty"`
+	DefaultLists   *bool   `json:"defaultLists,omitempty"`
+	DefaultLabels  *bool   `json:"defaultLabels,omitempty"`
+	IDOrganization *string `json:"idOrganization,omitempty"`
+	IDBoardSource  *string `json:"idBoardSource,omitempty"`
+}
+
 // List represents a Trello list.
 type List struct {
 	ID      string  `json:"id"`
@@ -68,13 +78,13 @@ type CheckItem struct {
 
 // Attachment represents a Trello card attachment.
 type Attachment struct {
-	ID       string  `json:"id"`
-	Name     string  `json:"name"`
-	URL      string  `json:"url"`
-	Bytes    int     `json:"bytes"`
-	MimeType string  `json:"mimeType"`
-	Date     string  `json:"date"`
-	IsUpload bool    `json:"isUpload"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	URL      string `json:"url"`
+	Bytes    int    `json:"bytes"`
+	MimeType string `json:"mimeType"`
+	Date     string `json:"date"`
+	IsUpload bool   `json:"isUpload"`
 }
 
 // Label represents a Trello label.

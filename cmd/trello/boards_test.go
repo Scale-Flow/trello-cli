@@ -15,6 +15,7 @@ type mockAPI struct {
 	trello.API
 	listBoardsFn           func(ctx context.Context) ([]trello.Board, error)
 	getBoardFn             func(ctx context.Context, id string) (trello.Board, error)
+	createBoardFn          func(ctx context.Context, params trello.CreateBoardParams) (trello.Board, error)
 	listListsFn            func(ctx context.Context, boardID string) ([]trello.List, error)
 	createListFn           func(ctx context.Context, boardID, name string) (trello.List, error)
 	updateListFn           func(ctx context.Context, listID string, params trello.UpdateListParams) (trello.List, error)
@@ -63,6 +64,13 @@ func (m *mockAPI) ListBoards(ctx context.Context) ([]trello.Board, error) {
 func (m *mockAPI) GetBoard(ctx context.Context, id string) (trello.Board, error) {
 	if m.getBoardFn != nil {
 		return m.getBoardFn(ctx, id)
+	}
+	return trello.Board{}, nil
+}
+
+func (m *mockAPI) CreateBoard(ctx context.Context, params trello.CreateBoardParams) (trello.Board, error) {
+	if m.createBoardFn != nil {
+		return m.createBoardFn(ctx, params)
 	}
 	return trello.Board{}, nil
 }
@@ -154,4 +162,67 @@ func TestBoardsGetMissingFlag(t *testing.T) {
 	if err == nil {
 		t.Fatal("boards get should fail without --board")
 	}
+}
+
+func TestBoardsCreateCommand(t *testing.T) {
+	setupTestAuth(t)
+	credStore.Set("default", credentials.Credentials{APIKey: "k", Token: "t", AuthMode: "manual"})
+	desc := "Board description"
+	orgID := "org1"
+	sourceBoardID := "template1"
+	apiClient = &mockAPI{
+		createBoardFn: func(ctx context.Context, params trello.CreateBoardParams) (trello.Board, error) {
+			if params.Name != "Project Board" {
+				t.Fatalf("params.Name = %q, want %q", params.Name, "Project Board")
+			}
+			if params.Desc == nil || *params.Desc != desc {
+				t.Fatalf("params.Desc = %v, want %q", params.Desc, desc)
+			}
+			if params.DefaultLists == nil || !*params.DefaultLists {
+				t.Fatalf("params.DefaultLists = %v, want true", params.DefaultLists)
+			}
+			if params.DefaultLabels == nil || !*params.DefaultLabels {
+				t.Fatalf("params.DefaultLabels = %v, want true", params.DefaultLabels)
+			}
+			if params.IDOrganization == nil || *params.IDOrganization != orgID {
+				t.Fatalf("params.IDOrganization = %v, want %q", params.IDOrganization, orgID)
+			}
+			if params.IDBoardSource == nil || *params.IDBoardSource != sourceBoardID {
+				t.Fatalf("params.IDBoardSource = %v, want %q", params.IDBoardSource, sourceBoardID)
+			}
+			return trello.Board{ID: "b3", Name: params.Name, Desc: desc}, nil
+		},
+	}
+
+	var buf bytes.Buffer
+	rootCmd.SetOut(&buf)
+	rootCmd.SetArgs([]string{
+		"boards", "create",
+		"--name", "Project Board",
+		"--desc", desc,
+		"--default-lists",
+		"--default-labels",
+		"--organization", orgID,
+		"--source-board", sourceBoardID,
+	})
+
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatalf("boards create failed: %v", err)
+	}
+
+	var envelope map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &envelope); err != nil {
+		t.Fatalf("invalid JSON: %v\nraw: %s", err, buf.String())
+	}
+
+	data := envelope["data"].(map[string]any)
+	if data["id"] != "b3" {
+		t.Errorf("data.id = %v, want b3", data["id"])
+	}
+}
+
+func TestBoardsCreateMissingName(t *testing.T) {
+	setupTestAuth(t)
+	credStore.Set("default", credentials.Credentials{APIKey: "k", Token: "t", AuthMode: "manual"})
+	assertContractCode(t, executeRootArgs("boards", "create"), "VALIDATION_ERROR")
 }

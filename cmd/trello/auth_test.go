@@ -77,6 +77,12 @@ func setupTestAuth(t *testing.T) {
 		flag.Changed = false
 	}
 	resetSubFlag("boards", "get", "board", "")
+	resetSubFlag("boards", "create", "name", "")
+	resetSubFlag("boards", "create", "desc", "")
+	resetSubFlag("boards", "create", "default-lists", "false")
+	resetSubFlag("boards", "create", "default-labels", "false")
+	resetSubFlag("boards", "create", "organization", "")
+	resetSubFlag("boards", "create", "source-board", "")
 	resetSubFlag("lists", "list", "board", "")
 	resetSubFlag("lists", "create", "board", "")
 	resetSubFlag("lists", "create", "name", "")
