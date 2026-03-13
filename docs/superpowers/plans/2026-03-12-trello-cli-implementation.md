@@ -431,7 +431,7 @@ git commit -m "feat: add Success envelope builder"
 - Modify: `internal/contract/response.go`
 - Modify: `internal/contract/response_test.go`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `internal/contract/response_test.go`:
 ```go
@@ -503,7 +503,7 @@ func TestErrorEnvelopeFromContractError(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `go test ./internal/contract/ -run TestError -v`
 Expected: compilation failure — `ErrorEnvelope` and `ErrorFromContractError` don't exist
@@ -4723,7 +4723,7 @@ func TestBoardsGetMissingFlag(t *testing.T) {
 Run: `go test ./cmd/trello/ -run TestBoards -v`
 Expected: compilation failure
 
-- [ ] **Step 3: Implement commands**
+- [x] **Step 3: Implement commands**
 
 Create `cmd/trello/boards.go`:
 ```go
@@ -4797,12 +4797,12 @@ func init() {
 }
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run: `go test ./cmd/trello/ -run TestBoards -v`
 Expected: all 4 tests PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add cmd/trello/boards.go cmd/trello/boards_test.go

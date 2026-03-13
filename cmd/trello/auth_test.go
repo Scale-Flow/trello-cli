@@ -12,6 +12,7 @@ func setupTestAuth(t *testing.T) {
 	t.Helper()
 	// Use a memory store for tests
 	credStore = credentials.NewMemoryStore()
+	apiClient = nil
 	// Reset root command output state to avoid cross-test contamination
 	rootCmd.SetOut(nil)
 	rootCmd.SetArgs(nil)
