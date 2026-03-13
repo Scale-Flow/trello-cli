@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/Scale-Flow/trello-cli/internal/auth"
 	"github.com/Scale-Flow/trello-cli/internal/contract"
@@ -45,6 +48,7 @@ func TestLoginWithToken(t *testing.T) {
 		"test-api-key",
 		"captured-token",
 		trelloServer.URL,
+		"interactive",
 	)
 	if err != nil {
 		t.Fatalf("CompleteLogin() returned error: %v", err)
@@ -96,6 +100,7 @@ func TestLoginInvalidToken(t *testing.T) {
 		"bad-key",
 		"bad-token",
 		trelloServer.URL,
+		"interactive",
 	)
 	if err == nil {
 		t.Fatal("CompleteLogin() should return error for invalid credentials")
@@ -263,5 +268,88 @@ func TestLoginRequiresAPIKey(t *testing.T) {
 	}
 	if contractErr.Code != contract.ValidationError {
 		t.Fatalf("error code = %q, want %q", contractErr.Code, contract.ValidationError)
+	}
+}
+
+func TestLoginWithDeviceFlow(t *testing.T) {
+	// Mock Trello API for token validation
+	trelloSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(auth.Member{
+			ID:       "member123",
+			Username: "testuser",
+			FullName: "Test User",
+		})
+	}))
+	defer trelloSrv.Close()
+
+	// Mock pairing service — use atomic for race-safe authorization flag
+	var authorized atomic.Bool
+	pairingSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/device/code":
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"device_code":      "test-device-code",
+				"user_code":        "WDJBMJHT",
+				"verification_uri": "https://example.com/help",
+				"expires_in":       900,
+				"interval":         1,
+			})
+		case "/token":
+			if !authorized.Load() {
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(map[string]string{"error": "authorization_pending"})
+				return
+			}
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"access_token": "trello-token-abc",
+				"api_key":      "api-key-xyz",
+			})
+		}
+	}))
+	defer pairingSrv.Close()
+
+	// Simulate authorization after a short delay
+	go func() {
+		time.Sleep(1500 * time.Millisecond)
+		authorized.Store(true)
+	}()
+
+	store := credentials.NewMemoryStore()
+
+	result, err := auth.LoginWithDeviceFlow(
+		context.Background(),
+		store,
+		"default",
+		trelloSrv.URL,
+		pairingSrv.URL,
+		io.Discard,
+	)
+	if err != nil {
+		t.Fatalf("LoginWithDeviceFlow: %v", err)
+	}
+
+	if !result.Configured {
+		t.Error("expected Configured=true")
+	}
+	if result.Member == nil || result.Member.FullName != "Test User" {
+		t.Errorf("expected member Test User, got %+v", result.Member)
+	}
+	if result.AuthMode == nil || *result.AuthMode != "device" {
+		t.Errorf("expected authMode device, got %v", result.AuthMode)
+	}
+
+	// Verify credentials were stored
+	creds, err := store.Get("default")
+	if err != nil {
+		t.Fatalf("Get credentials: %v", err)
+	}
+	if creds.Token != "trello-token-abc" {
+		t.Errorf("expected stored token trello-token-abc, got %s", creds.Token)
+	}
+	if creds.APIKey != "api-key-xyz" {
+		t.Errorf("expected stored api key api-key-xyz, got %s", creds.APIKey)
+	}
+	if creds.AuthMode != "device" {
+		t.Errorf("expected auth mode device, got %s", creds.AuthMode)
 	}
 }

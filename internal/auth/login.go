@@ -60,7 +60,7 @@ func BuildAuthorizeURL(apiKey, callbackURL string) string {
 }
 
 // CompleteLogin validates a captured token and stores credentials.
-func CompleteLogin(ctx context.Context, store credentials.Store, profile, apiKey, token, baseURL string) (LoginResult, error) {
+func CompleteLogin(ctx context.Context, store credentials.Store, profile, apiKey, token, baseURL, authMode string) (LoginResult, error) {
 	member, err := getMember(ctx, baseURL, apiKey, token)
 	if err != nil {
 		return LoginResult{}, err
@@ -69,13 +69,12 @@ func CompleteLogin(ctx context.Context, store credentials.Store, profile, apiKey
 	creds := credentials.Credentials{
 		APIKey:   apiKey,
 		Token:    token,
-		AuthMode: "interactive",
+		AuthMode: authMode,
 	}
 	if err := store.Set(profile, creds); err != nil {
 		return LoginResult{}, fmt.Errorf("failed to store credentials: %w", err)
 	}
 
-	authMode := "interactive"
 	return LoginResult{
 		Configured: true,
 		AuthMode:   &authMode,
@@ -115,7 +114,69 @@ func Login(ctx context.Context, store credentials.Store, profile, baseURL, apiKe
 		return LoginResult{}, err
 	}
 
-	return CompleteLogin(ctx, store, profile, resolvedAPIKey, token, baseURL)
+	return CompleteLogin(ctx, store, profile, resolvedAPIKey, token, baseURL, "interactive")
+}
+
+// LoginWithDeviceFlow runs the RFC 8628 device authorization flow.
+func LoginWithDeviceFlow(ctx context.Context, store credentials.Store, profile, baseURL, pairingServiceURL string, stderr io.Writer) (LoginResult, error) {
+	client := NewDeviceClient(pairingServiceURL)
+
+	codeResp, err := client.RequestCode()
+	if err != nil {
+		return LoginResult{}, fmt.Errorf("requesting pairing code: %w", err)
+	}
+
+	fmt.Fprintf(stderr, "\nEnter this code in your Trello board's CLI Connector Power-Up:\n\n")
+	fmt.Fprintf(stderr, "    %s\n\n", FormatDeviceUserCode(codeResp.UserCode))
+	fmt.Fprintf(stderr, "Waiting for authorization...\n")
+
+	interval := time.Duration(codeResp.Interval) * time.Second
+	deadline := time.Now().Add(time.Duration(codeResp.ExpiresIn) * time.Second)
+	networkFailures := 0
+	const maxNetworkRetries = 3
+
+	for time.Now().Before(deadline) {
+		select {
+		case <-ctx.Done():
+			return LoginResult{}, ctx.Err()
+		case <-time.After(interval):
+		}
+
+		result, err := client.PollToken(codeResp.DeviceCode)
+		if err != nil {
+			errMsg := err.Error()
+			if errMsg == "authorization_pending" {
+				networkFailures = 0
+				continue
+			}
+			if errMsg == "slow_down" {
+				interval += 5 * time.Second
+				networkFailures = 0
+				continue
+			}
+			if errMsg == "expired_token" {
+				return LoginResult{}, contract.NewError(contract.AuthRequired, "pairing code expired — run 'trello auth login' to try again")
+			}
+			networkFailures++
+			if networkFailures >= maxNetworkRetries {
+				return LoginResult{}, fmt.Errorf("pairing failed after %d retries: %w", maxNetworkRetries, err)
+			}
+			interval = time.Duration(networkFailures) * 5 * time.Second
+			continue
+		}
+
+		return CompleteLogin(ctx, store, profile, result.APIKey, result.AccessToken, baseURL, "device")
+	}
+
+	return LoginResult{}, contract.NewError(contract.AuthRequired, "pairing code expired — run 'trello auth login' to try again")
+}
+
+// FormatDeviceUserCode inserts a dash: WDJBMJHT → WDJB-MJHT.
+func FormatDeviceUserCode(code string) string {
+	if len(code) == 8 {
+		return code[:4] + "-" + code[4:]
+	}
+	return code
 }
 
 func resolveLoginAPIKey(store credentials.Store, profile, apiKey string) (string, error) {
