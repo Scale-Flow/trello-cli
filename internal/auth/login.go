@@ -19,6 +19,8 @@ import (
 )
 
 const trelloAuthorizeBase = "https://trello.com/1/authorize"
+const trelloCallbackHost = "localhost"
+const trelloCallbackPort = "3007"
 
 // LoginResult is the response shape for auth login.
 type LoginResult struct {
@@ -140,7 +142,7 @@ type tokenCaptureServer struct {
 }
 
 func newTokenCaptureServer() (*tokenCaptureServer, error) {
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	listener, err := net.Listen("tcp", trelloCallbackHost+":"+trelloCallbackPort)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +165,7 @@ func newTokenCaptureServer() (*tokenCaptureServer, error) {
 }
 
 func (s *tokenCaptureServer) callbackURL() string {
-	return "http://" + s.listener.Addr().String() + "/callback"
+	return "http://" + trelloCallbackHost + ":" + trelloCallbackPort + "/callback"
 }
 
 func (s *tokenCaptureServer) waitForToken(ctx context.Context) (string, error) {
@@ -231,4 +233,14 @@ func (s *tokenCaptureServer) handleToken(w http.ResponseWriter, r *http.Request)
 		s.tokenCh <- payload.Token
 	})
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// NewTokenCaptureServerForTest exposes callback-server creation for tests.
+func NewTokenCaptureServerForTest() (*tokenCaptureServer, error) {
+	return newTokenCaptureServer()
+}
+
+// CallbackURLForTest exposes the callback URL for tests.
+func (s *tokenCaptureServer) CallbackURLForTest() string {
+	return s.callbackURL()
 }

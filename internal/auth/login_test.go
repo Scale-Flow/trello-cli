@@ -147,6 +147,19 @@ func TestBuildAuthorizeURL(t *testing.T) {
 	}
 }
 
+func TestNewTokenCaptureServerUsesFixedLocalhostCallback(t *testing.T) {
+	server, err := auth.NewTokenCaptureServerForTest()
+	if err != nil {
+		t.Fatalf("NewTokenCaptureServerForTest() returned error: %v", err)
+	}
+	defer server.Close()
+
+	callbackURL := server.CallbackURLForTest()
+	if callbackURL != "http://localhost:3007/callback" {
+		t.Fatalf("callbackURL = %q, want %q", callbackURL, "http://localhost:3007/callback")
+	}
+}
+
 func TestLoginCompletesInteractiveFlowUsingEnvAPIKey(t *testing.T) {
 	t.Setenv("TRELLO_API_KEY", "env-api-key")
 
