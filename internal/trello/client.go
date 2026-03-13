@@ -223,16 +223,6 @@ func (c *Client) do(ctx context.Context, method, path string, params map[string]
 var _ API = (*Client)(nil)
 
 // Stub methods — implemented in resource-specific files.
-func (c *Client) ListLabels(ctx context.Context, boardID string) ([]Label, error) { return nil, nil }
-
-func (c *Client) CreateLabel(ctx context.Context, boardID, name, color string) (Label, error) {
-	return Label{}, nil
-}
-
-func (c *Client) AddLabelToCard(ctx context.Context, cardID, labelID string) error { return nil }
-
-func (c *Client) RemoveLabelFromCard(ctx context.Context, cardID, labelID string) error { return nil }
-
 func (c *Client) ListMembers(ctx context.Context, boardID string) ([]Member, error) { return nil, nil }
 
 func (c *Client) AddMemberToCard(ctx context.Context, cardID, memberID string) error { return nil }

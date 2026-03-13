@@ -128,6 +128,14 @@ func setupTestAuth(t *testing.T) {
 	resetSubFlag("attachments", "add-url", "name", "")
 	resetSubFlag("attachments", "delete", "card", "")
 	resetSubFlag("attachments", "delete", "attachment", "")
+	resetSubFlag("labels", "list", "board", "")
+	resetSubFlag("labels", "create", "board", "")
+	resetSubFlag("labels", "create", "name", "")
+	resetSubFlag("labels", "create", "color", "")
+	resetSubFlag("labels", "add", "card", "")
+	resetSubFlag("labels", "add", "label", "")
+	resetSubFlag("labels", "remove", "card", "")
+	resetSubFlag("labels", "remove", "label", "")
 	_ = resetFlag
 }
 

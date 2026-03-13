@@ -5507,8 +5507,8 @@ type ActionResult struct {
 ```
 Add `ActionResult` to `internal/trello/types.go` alongside `DeleteResult`. Use `ActionResult` for `labels add`, `labels remove`, `members add`, `members remove`. Use `DeleteResult` for all delete operations.
 
-- [ ] **Step 1-4: Write tests, implement, verify**
-- [ ] **Step 5: Commit**
+- [x] **Step 1-4: Write tests, implement, verify**
+- [x] **Step 5: Commit**
 
 ```bash
 git add internal/trello/labels.go internal/trello/labels_test.go cmd/trello/labels.go cmd/trello/labels_test.go internal/trello/client.go

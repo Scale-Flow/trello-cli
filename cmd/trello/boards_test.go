@@ -13,35 +13,39 @@ import (
 // mockAPI implements trello.API for command testing.
 type mockAPI struct {
 	trello.API
-	listBoardsFn        func(ctx context.Context) ([]trello.Board, error)
-	getBoardFn          func(ctx context.Context, id string) (trello.Board, error)
-	listListsFn         func(ctx context.Context, boardID string) ([]trello.List, error)
-	createListFn        func(ctx context.Context, boardID, name string) (trello.List, error)
-	updateListFn        func(ctx context.Context, listID string, params trello.UpdateListParams) (trello.List, error)
-	archiveListFn       func(ctx context.Context, listID string) (trello.List, error)
-	moveListFn          func(ctx context.Context, listID, boardID string, pos *float64) (trello.List, error)
-	listCardsByBoardFn  func(ctx context.Context, boardID string) ([]trello.Card, error)
-	listCardsByListFn   func(ctx context.Context, listID string) ([]trello.Card, error)
-	getCardFn           func(ctx context.Context, cardID string) (trello.Card, error)
-	createCardFn        func(ctx context.Context, params trello.CreateCardParams) (trello.Card, error)
-	updateCardFn        func(ctx context.Context, cardID string, params trello.UpdateCardParams) (trello.Card, error)
-	moveCardFn          func(ctx context.Context, cardID, listID string, pos *float64) (trello.Card, error)
-	archiveCardFn       func(ctx context.Context, cardID string) (trello.Card, error)
-	deleteCardFn        func(ctx context.Context, cardID string) error
-	listCommentsFn      func(ctx context.Context, cardID string) ([]trello.Comment, error)
-	addCommentFn        func(ctx context.Context, cardID, text string) (trello.Comment, error)
-	updateCommentFn     func(ctx context.Context, actionID, text string) (trello.Comment, error)
-	deleteCommentFn     func(ctx context.Context, actionID string) error
-	listChecklistsFn    func(ctx context.Context, cardID string) ([]trello.Checklist, error)
-	createChecklistFn   func(ctx context.Context, cardID, name string) (trello.Checklist, error)
-	deleteChecklistFn   func(ctx context.Context, checklistID string) error
-	addCheckItemFn      func(ctx context.Context, checklistID, name string) (trello.CheckItem, error)
-	updateCheckItemFn   func(ctx context.Context, cardID, itemID, state string) (trello.CheckItem, error)
-	deleteCheckItemFn   func(ctx context.Context, checklistID, itemID string) error
-	listAttachmentsFn   func(ctx context.Context, cardID string) ([]trello.Attachment, error)
-	addFileAttachmentFn func(ctx context.Context, cardID, filePath string, name *string) (trello.Attachment, error)
-	addURLAttachmentFn  func(ctx context.Context, cardID, urlStr string, name *string) (trello.Attachment, error)
-	deleteAttachmentFn  func(ctx context.Context, cardID, attachmentID string) error
+	listBoardsFn          func(ctx context.Context) ([]trello.Board, error)
+	getBoardFn            func(ctx context.Context, id string) (trello.Board, error)
+	listListsFn           func(ctx context.Context, boardID string) ([]trello.List, error)
+	createListFn          func(ctx context.Context, boardID, name string) (trello.List, error)
+	updateListFn          func(ctx context.Context, listID string, params trello.UpdateListParams) (trello.List, error)
+	archiveListFn         func(ctx context.Context, listID string) (trello.List, error)
+	moveListFn            func(ctx context.Context, listID, boardID string, pos *float64) (trello.List, error)
+	listCardsByBoardFn    func(ctx context.Context, boardID string) ([]trello.Card, error)
+	listCardsByListFn     func(ctx context.Context, listID string) ([]trello.Card, error)
+	getCardFn             func(ctx context.Context, cardID string) (trello.Card, error)
+	createCardFn          func(ctx context.Context, params trello.CreateCardParams) (trello.Card, error)
+	updateCardFn          func(ctx context.Context, cardID string, params trello.UpdateCardParams) (trello.Card, error)
+	moveCardFn            func(ctx context.Context, cardID, listID string, pos *float64) (trello.Card, error)
+	archiveCardFn         func(ctx context.Context, cardID string) (trello.Card, error)
+	deleteCardFn          func(ctx context.Context, cardID string) error
+	listCommentsFn        func(ctx context.Context, cardID string) ([]trello.Comment, error)
+	addCommentFn          func(ctx context.Context, cardID, text string) (trello.Comment, error)
+	updateCommentFn       func(ctx context.Context, actionID, text string) (trello.Comment, error)
+	deleteCommentFn       func(ctx context.Context, actionID string) error
+	listChecklistsFn      func(ctx context.Context, cardID string) ([]trello.Checklist, error)
+	createChecklistFn     func(ctx context.Context, cardID, name string) (trello.Checklist, error)
+	deleteChecklistFn     func(ctx context.Context, checklistID string) error
+	addCheckItemFn        func(ctx context.Context, checklistID, name string) (trello.CheckItem, error)
+	updateCheckItemFn     func(ctx context.Context, cardID, itemID, state string) (trello.CheckItem, error)
+	deleteCheckItemFn     func(ctx context.Context, checklistID, itemID string) error
+	listAttachmentsFn     func(ctx context.Context, cardID string) ([]trello.Attachment, error)
+	addFileAttachmentFn   func(ctx context.Context, cardID, filePath string, name *string) (trello.Attachment, error)
+	addURLAttachmentFn    func(ctx context.Context, cardID, urlStr string, name *string) (trello.Attachment, error)
+	deleteAttachmentFn    func(ctx context.Context, cardID, attachmentID string) error
+	listLabelsFn          func(ctx context.Context, boardID string) ([]trello.Label, error)
+	createLabelFn         func(ctx context.Context, boardID, name, color string) (trello.Label, error)
+	addLabelToCardFn      func(ctx context.Context, cardID, labelID string) error
+	removeLabelFromCardFn func(ctx context.Context, cardID, labelID string) error
 }
 
 func (m *mockAPI) ListBoards(ctx context.Context) ([]trello.Board, error) {
