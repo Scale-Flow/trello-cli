@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/Scale-Flow/trello-cli/internal/auth"
@@ -124,6 +125,10 @@ func TestAuthClearCommand(t *testing.T) {
 func TestAuthLoginCommand(t *testing.T) {
 	setupTestAuth(t)
 
+	// Mock device flow to fail so it falls through to browser login
+	runAuthLoginWithDeviceFlow = func(_ loginCommandContext, _ credentials.Store, _, _, _ string, _ loginOutputWriter) (auth.LoginResult, error) {
+		return auth.LoginResult{}, fmt.Errorf("pairing service unavailable")
+	}
 	runAuthLogin = func(_ loginCommandContext, _ credentials.Store, _ string, _ string, _ string, _ loginBrowserOpener, _ loginOutputWriter) (auth.LoginResult, error) {
 		authMode := "interactive"
 		return auth.LoginResult{
@@ -160,6 +165,49 @@ func TestAuthLoginCommand(t *testing.T) {
 	}
 	if data["authMode"] != "interactive" {
 		t.Errorf("authMode = %v, want interactive", data["authMode"])
+	}
+}
+
+func TestAuthLoginDeviceFlowCommand(t *testing.T) {
+	setupTestAuth(t)
+
+	// Mock device flow to succeed
+	runAuthLoginWithDeviceFlow = func(_ loginCommandContext, _ credentials.Store, _, _, _ string, _ loginOutputWriter) (auth.LoginResult, error) {
+		authMode := "device"
+		return auth.LoginResult{
+			Configured: true,
+			AuthMode:   &authMode,
+			Member: &auth.Member{
+				ID:       "member123",
+				Username: "brett",
+				FullName: "Brett McDowell",
+			},
+		}, nil
+	}
+
+	var buf bytes.Buffer
+	rootCmd.SetOut(&buf)
+	rootCmd.SetArgs([]string{"auth", "login"})
+
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatalf("auth login (device flow) failed: %v", err)
+	}
+
+	var envelope map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &envelope); err != nil {
+		t.Fatalf("invalid JSON: %v\nraw: %s", err, buf.String())
+	}
+
+	if envelope["ok"] != true {
+		t.Errorf("ok = %v, want true", envelope["ok"])
+	}
+
+	data := envelope["data"].(map[string]any)
+	if data["configured"] != true {
+		t.Errorf("configured = %v, want true", data["configured"])
+	}
+	if data["authMode"] != "device" {
+		t.Errorf("authMode = %v, want device", data["authMode"])
 	}
 }
 

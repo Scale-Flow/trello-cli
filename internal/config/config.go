@@ -31,7 +31,7 @@ func Load() Config {
 	v.SetDefault("timeout", "15s")
 	v.SetDefault("max_retries", 3)
 	v.SetDefault("retry_mutations", false)
-	v.SetDefault("pairing_service_url", "https://connector.trello-cli.com")
+	v.SetDefault("pairing_service_url", "https://trello-connector-production.up.railway.app")
 
 	// Environment binding
 	v.SetEnvPrefix("TRELLO")

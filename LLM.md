@@ -72,6 +72,7 @@ Auth commands:
 
 Auth modes that may appear in responses:
 
+- `device`
 - `manual`
 - `interactive`
 - `env`
@@ -79,11 +80,18 @@ Auth modes that may appear in responses:
 
 Interpretation:
 
-- `manual`, `interactive`, and `env` can represent usable auth depending on whether both key and token exist
+- `device`, `manual`, `interactive`, and `env` can represent usable auth depending on whether both key and token exist
 - `key_only` means login preparation state, not usable authenticated state
 - `auth status` validates credentials against Trello and returns member information when configured
 
-Interactive login notes:
+Device flow login (preferred):
+
+- `trello auth login` first attempts the device flow via the Trello Connector Power-Up pairing service
+- Displays a pairing code (e.g., `WDJB-MJHT`) for the user to enter in the Power-Up
+- No API key or developer setup required — credentials are returned by the pairing service
+- Falls back to browser login if the pairing service is unavailable
+
+Browser login fallback:
 
 - Requires a Trello API key from `--api-key`, stored key, or `TRELLO_API_KEY`
 - Opens browser authorization flow

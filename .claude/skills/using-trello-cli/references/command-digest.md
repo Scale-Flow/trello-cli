@@ -17,9 +17,9 @@ Quick-reference for all CLI commands, flags, and validation rules.
 | `auth login` | Browser-based OAuth flow (needs API key first) |
 | `auth clear` | Remove stored credentials |
 
-Auth modes: `manual`, `interactive`, `env` = usable. `key_only` = not usable for resource commands.
+Auth modes: `device`, `manual`, `interactive`, `env` = usable. `key_only` = not usable for resource commands.
 
-Login uses `http://localhost:3007/callback`. If browser launch fails, the URL prints to `stderr`.
+`auth login` first attempts device flow pairing via the Trello Connector Power-Up. If the pairing service is unavailable, it falls back to browser login on `http://localhost:3007/callback`. If browser launch fails, the URL prints to `stderr`.
 
 ## Boards
 

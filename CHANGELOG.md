@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-03-13
+
+### Added
+
+- Device flow authentication via Trello Connector Power-Up — `trello auth login` now pairs with the Power-Up automatically, no API key or developer setup required
+- New `device` auth mode for credentials obtained through the pairing service
+- `pairing_service_url` configuration option (defaults to the hosted pairing service)
+- Automatic fallback from device flow to browser-based login when the pairing service is unavailable
+
+### Changed
+
+- `trello auth login` now attempts device flow first before falling back to browser login
+- Updated documentation to reflect device flow as the recommended authentication method
+
 ## [1.0.0] - 2026-03-13
 
 ### Added

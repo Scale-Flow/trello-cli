@@ -43,6 +43,27 @@ trello boards list
 - `trello auth set-key` stores only the API key.
 - `trello auth clear` removes stored credentials.
 
-## Important Scope Note
+## Config File
 
-The repository contains an internal non-secret config package, but the current user-facing command behavior is centered on the flags and auth inputs documented above. If more runtime config becomes part of the public CLI surface, this document should expand with the exact supported precedence and keys.
+The CLI reads configuration from `~/.config/trello-cli/config.yaml`. Override the path with `TRELLO_CONFIG_PATH`.
+
+Supported keys:
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `pairing_service_url` | `https://trello-connector-production.up.railway.app` | URL of the device flow pairing service |
+| `profile` | `default` | Credential profile name |
+| `pretty` | `false` | Default pretty-print JSON |
+| `verbose` | `false` | Default verbose diagnostics |
+| `timeout` | `15s` | HTTP request timeout |
+| `max_retries` | `3` | Max retry attempts for failed requests |
+| `retry_mutations` | `false` | Whether to retry mutation (write) requests |
+
+Precedence: environment variables (`TRELLO_` prefix) > config file > defaults.
+
+Example `config.yaml`:
+
+```yaml
+pretty: true
+timeout: 30s
+```

@@ -15,7 +15,7 @@ Manage authentication and credential storage.
 - `set` stores credentials without validating them immediately.
 - `set-key` is useful before `login` or when rotating API keys.
 - `status` validates configured credentials by calling Trello.
-- `login` uses a browser flow and a localhost callback on port `3007`.
+- `login` first attempts device flow pairing via the Trello Connector Power-Up. If the pairing service is unavailable, it falls back to browser-based login on `localhost:3007`.
 - `clear` removes stored credentials from the primary store.
 
 ## Examples

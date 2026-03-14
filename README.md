@@ -14,7 +14,7 @@ Includes a ready-to-use **Claude Code skill** so Claude can manage your Trello b
 - **Agent-first design** — stable JSON envelopes on every command for reliable tool use
 - **Claude Code skill included** — install once, and Claude can manage Trello autonomously
 - Broad command coverage: boards, lists, cards, comments, labels, members, checklists, attachments, custom fields, and search
-- Interactive browser login and manual credential setup
+- Device flow login via Trello Connector Power-Up, with browser and manual fallbacks
 - Single-binary Go CLI with minimal runtime requirements
 
 ## Installation
@@ -76,18 +76,19 @@ See [Getting Started](docs/getting-started.md) for the full walkthrough.
 
 ## Quick Start
 
-Store your credentials:
+Authenticate via the Connector Power-Up (recommended — no API key needed):
+
+```bash
+trello auth login
+# Enter the displayed pairing code in the CLI Connector Power-Up on your Trello board
+trello auth status --pretty
+```
+
+Or store credentials manually:
 
 ```bash
 trello auth set --api-key <your-api-key> --token <your-token>
 trello auth status --pretty
-```
-
-Or use interactive browser login:
-
-```bash
-trello auth set-key --api-key <your-api-key>
-trello auth login
 ```
 
 List your boards:

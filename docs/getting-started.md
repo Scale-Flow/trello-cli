@@ -43,14 +43,26 @@ You can also use `go run ./cmd/trello` in place of `./bin/trello` during develop
 
 ## Authenticate
 
-### Option 1: Manual Credentials
+### Option 1: Device Flow via Connector Power-Up (Recommended)
+
+The easiest way to authenticate — no API key or developer setup required:
+
+```bash
+trello auth login
+```
+
+The CLI displays a pairing code (e.g., `WDJB-MJHT`). Enter it in the CLI Connector Power-Up on any Trello board. Once paired, credentials are stored automatically.
+
+### Option 2: Manual Credentials
+
+If you have a Trello API key and token (see [Prerequisites](#prerequisites-get-your-trello-api-key)):
 
 ```bash
 trello auth set --api-key <your-api-key> --token <your-token>
 trello auth status --pretty
 ```
 
-### Option 2: Interactive Browser Login
+### Option 3: Interactive Browser Login
 
 Interactive login requires a Trello API key. The CLI can read that key from `TRELLO_API_KEY` or from a previously stored key.
 
@@ -60,7 +72,7 @@ trello auth login
 trello auth status --pretty
 ```
 
-The login flow opens a browser and waits for the callback on `http://localhost:3007/callback`.
+If the device flow pairing service is unavailable, `auth login` falls back to a browser flow on `http://localhost:3007/callback`.
 
 ## Learn The Output Contract
 

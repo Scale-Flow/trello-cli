@@ -4,8 +4,9 @@
 
 ## Supported Auth Flows
 
-The CLI supports three practical auth states:
+The CLI supports four auth modes:
 
+- `device`: paired via the Trello Connector Power-Up (recommended — no API key setup required)
 - `manual`: API key and token stored with `trello auth set`
 - `interactive`: API key plus browser login token stored with `trello auth login`
 - `env`: credentials supplied through `TRELLO_API_KEY` and `TRELLO_TOKEN`
@@ -52,7 +53,20 @@ trello auth clear
 - The CLI uses a fallback chain: keyring first, then environment variables.
 - Stored credentials are associated with the `default` profile in the current implementation.
 
-## Interactive Login Details
+## Device Flow Login (Recommended)
+
+When `trello auth login` is run, the CLI first attempts a device flow via the Trello Connector Power-Up:
+
+1. The CLI contacts the pairing service and displays a pairing code (e.g., `WDJB-MJHT`).
+2. Enter the code in the CLI Connector Power-Up on any Trello board.
+3. Once paired, the CLI receives credentials automatically — no API key or developer setup needed.
+4. If the pairing service is unavailable, the CLI falls back to browser-based login.
+
+The device flow is ideal for users who don't want to create a Power-Up in the Trello developer portal.
+
+## Interactive Browser Login
+
+If the device flow is unavailable or not configured, the CLI falls back to browser-based login:
 
 - The CLI opens the Trello authorization URL in a browser.
 - It waits for the token callback on `localhost:3007`.
